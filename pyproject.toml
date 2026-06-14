@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "llm-log-triage"
-version = "0.1.0"
+version = "1.0.0"
 description = "LLM log triage — structured JSON from raw logs with golden-set evals and LangSmith integration"
 readme = "README.md"
 license = { text = "MIT" }
