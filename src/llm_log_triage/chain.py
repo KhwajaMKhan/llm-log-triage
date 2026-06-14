@@ -27,6 +27,7 @@ from langchain_core.runnables import RunnableConfig
 from llm_log_triage.cache import get_cached, set_cached
 from llm_log_triage.instrumentation.base import get_callbacks
 from llm_log_triage.prompts import get_prompt
+from llm_log_triage.providers import SUPPORTED_MODELS, resolve_provider
 from llm_log_triage.schema import TriageInput, TriageOutput
 
 load_dotenv()
@@ -34,15 +35,7 @@ load_dotenv()
 DEFAULT_MODEL = os.getenv("LOG_TRIAGE_DEFAULT_MODEL", "gpt-4o-mini")
 DEFAULT_PROMPT = os.getenv("LOG_TRIAGE_DEFAULT_PROMPT_VERSION", "v3")
 
-# Verified via live invoke (prompt v3); Streamlit selectbox uses this list.
-SUPPORTED_MODELS: tuple[str, ...] = (
-    "gpt-4o-mini",
-    "gpt-4o",
-    "claude-sonnet-4-6",
-    "claude-opus-4-7",
-)
-
-
+# Verified via live invoke (prompt v3); Streamlit selectbox uses providers.SUPPORTED_MODELS
 @dataclass
 class InvokeResult:
     output: TriageOutput
@@ -53,8 +46,9 @@ class InvokeResult:
 
 
 def _build_llm(model: str):
-    """Pick OpenAI or Anthropic client based on model name prefix."""
-    if model.startswith("claude") or model.startswith("anthropic"):
+    """Pick OpenAI or Anthropic client via providers.resolve_provider()."""
+    provider = resolve_provider(model)
+    if provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
 
         # Claude 4+ (e.g. opus-4-7) rejects `temperature`; omit for all Anthropic models.

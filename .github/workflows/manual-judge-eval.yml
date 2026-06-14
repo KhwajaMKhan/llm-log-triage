@@ -23,6 +23,7 @@ jobs:
       OBS_BACKEND: ${{ inputs.obs_backend }}
       LOG_TRIAGE_DEFAULT_PROMPT_VERSION: v3
       LOG_TRIAGE_DEFAULT_MODEL: ${{ vars.LOG_TRIAGE_CI_MODEL || 'gpt-4o-mini' }}
+      LOG_TRIAGE_PROVIDER: ${{ vars.LOG_TRIAGE_CI_PROVIDER }}
     steps:
       - uses: actions/checkout@v4
 
@@ -38,27 +39,13 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          LOG_TRIAGE_DEFAULT_MODEL: ${{ env.LOG_TRIAGE_DEFAULT_MODEL }}
-        run: |
-          echo "CI model (triage + judge default): $LOG_TRIAGE_DEFAULT_MODEL"
-          if [[ "$LOG_TRIAGE_DEFAULT_MODEL" == claude* ]] || [[ "$LOG_TRIAGE_DEFAULT_MODEL" == anthropic* ]]; then
-            if [ -z "$ANTHROPIC_API_KEY" ]; then
-              echo "::error::ANTHROPIC_API_KEY secret required when LOG_TRIAGE_CI_MODEL is a Claude model"
-              exit 1
-            fi
-          else
-            if [ -z "$OPENAI_API_KEY" ]; then
-              echo "::error::OPENAI_API_KEY secret required when LOG_TRIAGE_CI_MODEL is an OpenAI model (default gpt-4o-mini)"
-              exit 1
-            fi
-          fi
+        run: python -m llm_log_triage.providers --check-secrets
 
       - name: Run pytest judge
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
-          LOG_TRIAGE_DEFAULT_MODEL: ${{ env.LOG_TRIAGE_DEFAULT_MODEL }}
         run: pytest tests/test_judge.py -m judge -v --tb=short
 
       - name: Upload judge report

@@ -66,18 +66,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+          LOG_TRIAGE_DEFAULT_MODEL: ${{ inputs.model }}
         run: |
-          if [[ "${{ inputs.model }}" == claude* ]] || [[ "${{ inputs.model }}" == anthropic* ]]; then
-            if [ -z "$ANTHROPIC_API_KEY" ]; then
-              echo "::error::ANTHROPIC_API_KEY secret required for Claude models"
-              exit 1
-            fi
-          else
-            if [ -z "$OPENAI_API_KEY" ]; then
-              echo "::error::OPENAI_API_KEY secret required for OpenAI models"
-              exit 1
-            fi
-          fi
+          python -m llm_log_triage.providers --check-secrets --model "${{ inputs.model }}"
           if [ -z "$LANGCHAIN_API_KEY" ]; then
             echo "::error::LANGCHAIN_API_KEY secret required for LangSmith tracing/eval"
             exit 1

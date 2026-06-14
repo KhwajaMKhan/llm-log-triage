@@ -138,6 +138,7 @@ flowchart LR
 | Module | Responsibility |
 |--------|----------------|
 | `chain.py` | **Single entry:** `invoke()` — LCEL prompt \| LLM → `TriageOutput` |
+| `providers.py` | **Provider routing:** `MODEL_REGISTRY`, `LOG_TRIAGE_PROVIDER`, CI `--check-secrets` |
 | `prompts.py` | Prompt templates v1→v3 (`get_prompt`) |
 | `schema.py` | `TriageInput`, `TriageOutput`, enums |
 | `eval_checks.py` | **Single scorer** for golden set (parity) |

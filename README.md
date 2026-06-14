@@ -20,9 +20,16 @@ cp .env.example .env   # add API key(s) for your chosen model — see below
 
 ## OpenAI vs Anthropic (app & CI)
 
-The app supports **both providers**. Pick one model; set the **matching** API key. Model names are routed in `chain.py` (`gpt-*` → OpenAI, `claude-*` → Anthropic).
+The app supports **both providers**. Pick one model; set the **matching** API key.
 
-**Tested models:** `gpt-4o-mini`, `gpt-4o`, `claude-sonnet-4-6`, `claude-opus-4-7` (see `SUPPORTED_MODELS` in `chain.py`).
+**Provider routing** lives in `src/llm_log_triage/providers.py` (not hard-coded shell checks in workflows):
+
+1. **`LOG_TRIAGE_PROVIDER`** (`openai` | `anthropic`) — explicit override for new model ids
+2. **`MODEL_REGISTRY`** — tested models (`gpt-4o-mini`, `gpt-4o`, `claude-sonnet-4-6`, `claude-opus-4-7`)
+3. **Name-prefix heuristics** — fallback for common `gpt-*` / `claude-*` patterns
+4. **Error** — unknown id without override → add to registry or set `LOG_TRIAGE_PROVIDER`
+
+**Tested models:** see `SUPPORTED_MODELS` in `providers.py` (re-exported by `chain.py`).
 
 ### Run the app locally
 
@@ -30,6 +37,7 @@ The app supports **both providers**. Pick one model; set the **matching** API ke
 | -------- | --------------- |
 | **OpenAI** (default) | `OPENAI_API_KEY=sk-...` and `LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini` |
 | **Anthropic** | `ANTHROPIC_API_KEY=sk-ant-...` and `LOG_TRIAGE_DEFAULT_MODEL=claude-sonnet-4-6` |
+| **New model id** | Matching key + `LOG_TRIAGE_PROVIDER=openai` or `anthropic` (until added to `MODEL_REGISTRY`) |
 
 Streamlit model picker and CLI `--model` override the default. You only need the key for the provider you use.
 
@@ -40,16 +48,48 @@ CI should use the **same provider/model you care about**, otherwise a green buil
 | Step | Where | What to set |
 | ---- | ----- | ----------- |
 | 1 | **Settings → Secrets → Actions** | `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY` |
-| 2 | **Settings → Secrets → Actions → Variables** | `LOG_TRIAGE_CI_MODEL` — e.g. `gpt-4o-mini` (default if unset) or `claude-sonnet-4-6` |
-| 3 | Branch protection | Require checks `test (free)` + `eval (golden-set)` |
+| 2 | **Settings → Variables** | `LOG_TRIAGE_CI_MODEL` — e.g. `gpt-4o-mini` (default) or `claude-sonnet-4-6` |
+| 3 | **Settings → Variables** (optional) | `LOG_TRIAGE_CI_PROVIDER` — `openai` or `anthropic` when using a new model id |
+| 4 | Branch protection | Require checks `test (free)` + `eval (golden-set)` |
 
-`eval-gate.yml` reads `LOG_TRIAGE_CI_MODEL`, sets `LOG_TRIAGE_DEFAULT_MODEL` for pytest, and requires the **matching secret**. No workflow edit needed to switch provider — change the repo variable and add the right secret.
+Workflows call `python -m llm_log_triage.providers --check-secrets` — same logic as the app.
 
-**Manual LangSmith eval:** Actions → *Manual LangSmith Eval* → model **dropdown** (same four tested models).
+**Manual LangSmith eval:** Actions → *Manual LangSmith Eval* → model **dropdown** (four tested models).
 
-**LLM judge:** uses `LOG_TRIAGE_JUDGE_MODEL` if set, otherwise **`LOG_TRIAGE_DEFAULT_MODEL`** — same provider routing as triage (OpenAI judge for `gpt-*`, Anthropic for `claude-*`). Override judge separately: `LOG_TRIAGE_JUDGE_MODEL=claude-sonnet-4-6`.
+**LLM judge (default):** `LOG_TRIAGE_JUDGE_MODEL` if set, else **`LOG_TRIAGE_DEFAULT_MODEL`** — same provider routing via `providers.py`.
 
-**Note:** Golden-set pass thresholds were validated on **prompt v3 + `gpt-4o-mini`**. Claude may score differently; treat Anthropic CI as best-effort until dual-provider baselines land ([docs/ROADMAP.md](docs/ROADMAP.md)).
+### Cross-model judge (experiment only)
+
+Splitting **triage** and **judge** across providers is **not the default** and **not baselined for CI** — useful to explore same-model bias vs a second reviewer.
+
+| Setup | Env vars | Keys needed |
+| ----- | -------- | ----------- |
+| Same provider (default) | `LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini` | `OPENAI_API_KEY` |
+| Cross-model experiment | `LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini` + `LOG_TRIAGE_JUDGE_MODEL=claude-sonnet-4-6` | **Both** `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` |
+
+```bash
+source .venv/bin/activate
+
+# OpenAI triage + Anthropic judge (~2× provider cost on judge runs)
+LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini \
+LOG_TRIAGE_JUDGE_MODEL=claude-sonnet-4-6 \
+./scripts/run_judge_eval.sh
+
+# Single-case fail-smoke with cross-model judge
+LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini \
+LOG_TRIAGE_JUDGE_MODEL=claude-sonnet-4-6 \
+pytest tests/test_judge.py::test_judge_rejects_deliberately_bad_triage -m judge -v -s
+
+# Limit cost while experimenting
+LOG_TRIAGE_JUDGE_MAX_CASES=3 \
+LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini \
+LOG_TRIAGE_JUDGE_MODEL=claude-sonnet-4-6 \
+./scripts/run_judge_eval.sh
+```
+
+Optional: set `LOG_TRIAGE_PROVIDER` / per-model routing only when a model id is not in `MODEL_REGISTRY`.
+
+**Note:** Golden-set L1 gate baselines — see [docs/ROADMAP.md](docs/ROADMAP.md) (`gpt-4o-mini` CI default; `claude-sonnet-4-6` at 21/22 locally). Cross-model judge has **no** published pass-rate baseline yet.
 
 ### Run
 

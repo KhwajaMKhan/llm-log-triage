@@ -18,6 +18,8 @@ Not in scope for the initial public release. Items below are planned enhancement
 | Annotation export | JSON/CSV from Streamlit sessions for golden-set curation |
 | **Dual-provider CI matrix** | Optional parallel `eval (golden-set)` jobs on OpenAI + Anthropic with separate pass thresholds (golden set tuned on `gpt-4o-mini` today) |
 
+| Cross-model judge baselines | Experiment docs only — no CI gate; optional `LOG_TRIAGE_JUDGE_MODEL` ≠ triage model |
+
 ## Provider / CI alignment
 
 | Item | Notes |
