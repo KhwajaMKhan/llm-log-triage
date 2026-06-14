@@ -31,6 +31,8 @@ Golden-set evals, pytest CI gate, optional LangSmith tracing/experiments, and th
 | **L1** | **Code reviewer** (`eval_checks.py`) | Severity, category, keywords vs `data/golden_set.json` | Yes (`eval (golden-set)` CI) |
 | **L2** | **LLM judge** (`judge.py`) | Coherence + actionability ≥ 4/5 | Manual / notebook only |
 
+**Merge gate in practice.** Branch protection on `main` should require **`eval (golden-set)` on the PR before merge** (alongside **`test (free)`**). That blocks bad prompt or model changes from landing. The same golden-set eval also runs on push to `main`, so the **“main is green” badge** reflects live eval quality — not just “looked fine in a demo.”
+
 The same L1 scorer (`eval_checks.score_case`) runs in pytest, the notebook, and LangSmith experiments — **offline parity**. Details and flowcharts: [docs/architecture.md](docs/architecture.md#4-eval-architecture-three-levels).
 
 ## Quick start
