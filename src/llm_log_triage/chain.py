@@ -27,7 +27,7 @@ from langchain_core.runnables import RunnableConfig
 from llm_log_triage.cache import get_cached, set_cached
 from llm_log_triage.instrumentation.base import get_callbacks
 from llm_log_triage.prompts import get_prompt
-from llm_log_triage.providers import SUPPORTED_MODELS, resolve_provider
+from llm_log_triage.providers import SUPPORTED_MODELS, provider_for_model
 from llm_log_triage.schema import TriageInput, TriageOutput
 
 load_dotenv()
@@ -46,9 +46,8 @@ class InvokeResult:
 
 
 def _build_llm(model: str):
-    """Pick OpenAI or Anthropic client via providers.resolve_provider()."""
-    provider = resolve_provider(model)
-    if provider == "anthropic":
+    """OpenAI or Anthropic client for a supported model id."""
+    if provider_for_model(model) == "anthropic":
         from langchain_anthropic import ChatAnthropic
 
         # Claude 4+ (e.g. opus-4-7) rejects `temperature`; omit for all Anthropic models.

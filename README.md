@@ -18,78 +18,40 @@ pip install -e ".[dev,obs]"
 cp .env.example .env   # add API key(s) for your chosen model — see below
 ```
 
-## OpenAI vs Anthropic (app & CI)
+## Pick a model (4 supported)
 
-The app supports **both providers**. Pick one model; set the **matching** API key.
+Choose one model. Set the **matching API key** in `.env`. Streamlit has the same dropdown.
 
-**Provider routing** lives in `src/llm_log_triage/providers.py` (not hard-coded shell checks in workflows):
-
-1. **`LOG_TRIAGE_PROVIDER`** (`openai` | `anthropic`) — explicit override for new model ids
-2. **`MODEL_REGISTRY`** — tested models (`gpt-4o-mini`, `gpt-4o`, `claude-sonnet-4-6`, `claude-opus-4-7`)
-3. **Name-prefix heuristics** — fallback for common `gpt-*` / `claude-*` patterns
-4. **Error** — unknown id without override → add to registry or set `LOG_TRIAGE_PROVIDER`
-
-**Tested models:** see `SUPPORTED_MODELS` in `providers.py` (re-exported by `chain.py`).
-
-### Run the app locally
-
-| You want | `.env` settings |
-| -------- | --------------- |
-| **OpenAI** (default) | `OPENAI_API_KEY=sk-...` and `LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini` |
-| **Anthropic** | `ANTHROPIC_API_KEY=sk-ant-...` and `LOG_TRIAGE_DEFAULT_MODEL=claude-sonnet-4-6` |
-| **New model id** | Matching key + `LOG_TRIAGE_PROVIDER=openai` or `anthropic` (until added to `MODEL_REGISTRY`) |
-
-Streamlit model picker and CLI `--model` override the default. You only need the key for the provider you use.
-
-### Run CI on GitHub (merge gate)
-
-CI should use the **same provider/model you care about**, otherwise a green build does not validate your Anthropic deployment (and vice versa).
-
-| Step | Where | What to set |
-| ---- | ----- | ----------- |
-| 1 | **Settings → Secrets → Actions** | `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY` |
-| 2 | **Settings → Variables** | `LOG_TRIAGE_CI_MODEL` — e.g. `gpt-4o-mini` (default) or `claude-sonnet-4-6` |
-| 3 | **Settings → Variables** (optional) | `LOG_TRIAGE_CI_PROVIDER` — `openai` or `anthropic` when using a new model id |
-| 4 | Branch protection | Require checks `test (free)` + `eval (golden-set)` |
-
-Workflows call `python -m llm_log_triage.providers --check-secrets` — same logic as the app.
-
-**Manual LangSmith eval:** Actions → *Manual LangSmith Eval* → model **dropdown** (four tested models).
-
-**LLM judge (default):** `LOG_TRIAGE_JUDGE_MODEL` if set, else **`LOG_TRIAGE_DEFAULT_MODEL`** — same provider routing via `providers.py`.
-
-### Cross-model judge (experiment only)
-
-Splitting **triage** and **judge** across providers is **not the default** and **not baselined for CI** — useful to explore same-model bias vs a second reviewer.
-
-| Setup | Env vars | Keys needed |
-| ----- | -------- | ----------- |
-| Same provider (default) | `LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini` | `OPENAI_API_KEY` |
-| Cross-model experiment | `LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini` + `LOG_TRIAGE_JUDGE_MODEL=claude-sonnet-4-6` | **Both** `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` |
+| Model | Provider | API key in `.env` |
+| ----- | -------- | ----------------- |
+| `gpt-4o-mini` **(default)** | OpenAI | `OPENAI_API_KEY` |
+| `gpt-4o` | OpenAI | `OPENAI_API_KEY` |
+| `claude-sonnet-4-6` | Anthropic | `ANTHROPIC_API_KEY` |
+| `claude-opus-4-7` | Anthropic | `ANTHROPIC_API_KEY` |
 
 ```bash
-source .venv/bin/activate
+# Example: OpenAI (default)
+LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini
+OPENAI_API_KEY=sk-...
 
-# OpenAI triage + Anthropic judge (~2× provider cost on judge runs)
-LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini \
-LOG_TRIAGE_JUDGE_MODEL=claude-sonnet-4-6 \
-./scripts/run_judge_eval.sh
-
-# Single-case fail-smoke with cross-model judge
-LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini \
-LOG_TRIAGE_JUDGE_MODEL=claude-sonnet-4-6 \
-pytest tests/test_judge.py::test_judge_rejects_deliberately_bad_triage -m judge -v -s
-
-# Limit cost while experimenting
-LOG_TRIAGE_JUDGE_MAX_CASES=3 \
-LOG_TRIAGE_DEFAULT_MODEL=gpt-4o-mini \
-LOG_TRIAGE_JUDGE_MODEL=claude-sonnet-4-6 \
-./scripts/run_judge_eval.sh
+# Example: Anthropic
+LOG_TRIAGE_DEFAULT_MODEL=claude-sonnet-4-6
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-Optional: set `LOG_TRIAGE_PROVIDER` / per-model routing only when a model id is not in `MODEL_REGISTRY`.
+**CI (merge gate):** always **`gpt-4o-mini` + `OPENAI_API_KEY`** — one fixed EDD baseline for all contributors. Anthropic is for **local runs / Streamlit / manual LangSmith experiments**, not the PR gate ([docs/ROADMAP.md](docs/ROADMAP.md) for future Anthropic CI).
 
-**Note:** Golden-set L1 gate baselines — see [docs/ROADMAP.md](docs/ROADMAP.md) (`gpt-4o-mini` CI default; `claude-sonnet-4-6` at 21/22 locally). Cross-model judge has **no** published pass-rate baseline yet.
+```mermaid
+flowchart LR
+  subgraph app [Your app]
+    Pick[Pick model from table] --> Key[Set matching API key]
+    Key --> Run[CLI / Streamlit / notebook]
+  end
+  subgraph ci [GitHub CI]
+    Fixed[gpt-4o-mini fixed] --> OpenAI[OPENAI_API_KEY secret]
+    OpenAI --> Gate[eval golden-set ≥90%]
+  end
+```
 
 ### Run
 
@@ -228,16 +190,16 @@ Four workflows live under [`.github/workflows/`](.github/workflows/). See also [
 | Workflow file | Job name | Trigger | API keys | What it does |
 |---------------|----------|---------|----------|--------------|
 | [`ci.yml`](.github/workflows/ci.yml) | `test (free)` | **Automatic** — `push` / `pull_request` → `main` | None | Deterministic tests only: `pytest -m "not llm"`. Schema, eval logic, instrumentation mocks — no live LLM calls. |
-| [`eval-gate.yml`](.github/workflows/eval-gate.yml) | `eval (golden-set)` | **Automatic** — `push` / `pull_request` → `main` | Key for `LOG_TRIAGE_CI_MODEL` (repo variable; default `gpt-4o-mini`) | Golden-set regression gate: `pytest tests/test_golden_set.py -m llm`, prompt v3, ≥90% pass. ~26 live LLM calls per run. Model from `LOG_TRIAGE_CI_MODEL`; requires matching OpenAI or Anthropic secret. |
+| [`eval-gate.yml`](.github/workflows/eval-gate.yml) | `eval (golden-set)` | **Automatic** — `push` / `pull_request` → `main` | `OPENAI_API_KEY` | Golden-set gate — **fixed** `gpt-4o-mini`, prompt v3, ≥90%. ~26 LLM calls/run. |
 
 ### Manual only (`workflow_dispatch` — you click Run)
 
 | Workflow file | Job name | Trigger | API keys | What it does |
 |---------------|----------|---------|----------|--------------|
 | [`manual-langsmith-eval.yml`](.github/workflows/manual-langsmith-eval.yml) | `manual langsmith eval` | **Manual** — Actions → *Manual LangSmith Eval* → Run workflow | Matching key for selected model + `LANGCHAIN_API_KEY` | Ad-hoc LangSmith experiment. **Model dropdown:** `gpt-4o-mini`, `gpt-4o`, `claude-sonnet-4-6`, `claude-opus-4-7`. Not a PR gate. |
-| [`manual-judge-eval.yml`](.github/workflows/manual-judge-eval.yml) | `manual judge eval` | **Manual** — Actions → *Manual Judge Eval* → Run workflow | Key for `LOG_TRIAGE_CI_MODEL` (+ `LANGCHAIN_API_KEY` if `obs_backend=langsmith`) | L2 **LLM-as-judge** eval: `pytest tests/test_judge.py -m judge`. Not a PR gate. |
+| [`manual-judge-eval.yml`](.github/workflows/manual-judge-eval.yml) | `manual judge eval` | **Manual** — Actions → *Manual Judge Eval* → Run workflow | `OPENAI_API_KEY` (+ `LANGCHAIN_API_KEY` if tracing) | L2 judge eval — `gpt-4o-mini`. Not a PR gate. |
 
-**One-time setup:** Settings → Secrets and variables → Actions — add `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY`; set variable `LOG_TRIAGE_CI_MODEL` to match your provider. See [OpenAI vs Anthropic](#openai-vs-anthropic-app--ci) above.
+**One-time setup:** Settings → Secrets → Actions → add `OPENAI_API_KEY`. See [Pick a model](#pick-a-model-4-supported) above.
 
 ### Run manual judge eval
 

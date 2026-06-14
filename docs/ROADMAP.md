@@ -1,42 +1,37 @@
 # Roadmap (future)
 
-Not in scope for the initial public release. Items below are planned enhancements for later iterations.
+Not in scope for the v1.0 public release. Items below are planned for later iterations.
 
 ## Integrations
 
 | Item | Interface | Notes |
 |------|-----------|-------|
-| **Email team about triage** | CLI, Streamlit | Send structured triage JSON (severity, cause, action) to on-call or service owners |
-| **Human-in-the-loop (HITL)** | CLI, Streamlit | Pause for human approve/reject/edit before acting on triage output |
-| **Human annotation** | CLI, Streamlit | Label or correct triage results; feed back into `golden_set.json` or LangSmith dataset |
+| **Email team about triage** | CLI, Streamlit | Send structured triage JSON to on-call or service owners |
+| **Human-in-the-loop (HITL)** | CLI, Streamlit | Approve/reject/edit before acting on triage output |
+| **Human annotation** | CLI, Streamlit | Label/correct results → `golden_set.json` or LangSmith |
 
-## Eval / quality
-
-| Item | Notes |
-|------|-------|
-| Human annotation workflow tests | pytest + optional LangSmith annotation queue sync |
-| Annotation export | JSON/CSV from Streamlit sessions for golden-set curation |
-| **Dual-provider CI matrix** | Optional parallel `eval (golden-set)` jobs on OpenAI + Anthropic with separate pass thresholds (golden set tuned on `gpt-4o-mini` today) |
-
-| Cross-model judge baselines | Experiment docs only — no CI gate; optional `LOG_TRIAGE_JUDGE_MODEL` ≠ triage model |
-
-## Provider / CI alignment
+## Eval / quality (future)
 
 | Item | Notes |
 |------|-------|
-| Provider-aligned CI (shipped v1.1+) | `LOG_TRIAGE_CI_MODEL` repo variable + matching secret — see README *OpenAI vs Anthropic* |
-| Per-PR provider override | workflow_dispatch input on eval gate (future) |
+| **Anthropic CI gate** | Optional second merge check (today: CI is OpenAI `gpt-4o-mini` only) |
+| **Dual-provider CI matrix** | Parallel eval jobs with per-provider pass thresholds |
+| **Cross-model judge baselines** | Triage + judge on different providers (experiment today, no baseline) |
+| Human annotation workflow tests | pytest + LangSmith annotation queue |
+| Add model to registry | New tested model → update `providers.MODEL_REGISTRY` + dropdowns |
 
 ### Golden-set baselines (prompt v3, local eval)
 
-| Model | Normal pass rate | Adversarial | Notes |
-|-------|------------------|-------------|-------|
-| `gpt-4o-mini` | ≥90% (CI gate default) | 4/4 | Original tuned baseline |
-| `claude-sonnet-4-6` | **21/22 (95.5%)** | 4/4 | Fail: `gs-013` severity mismatch (2026-06 local run) |
+| Model | Normal pass rate | Adversarial | CI today? |
+|-------|------------------|-------------|-----------|
+| `gpt-4o-mini` | ≥90% | 4/4 | **Yes** (merge gate) |
+| `claude-sonnet-4-6` | 21/22 (95.5%) | 4/4 | Local / LangSmith manual only |
 
 ## Current scope (shipped)
 
-- L0 schema, L1 code reviewer (`eval_checks`), L2 LLM judge (manual)
-- Pre-labeled `data/golden_set.json` (26 cases) — expert labels in git, not live annotation UI
+- **4 predefined models** — pick in Streamlit or `.env`; matching API key only
+- **CI:** fixed `gpt-4o-mini` + `OPENAI_API_KEY` (EDD L1 gate)
+- L0 schema, L1 code reviewer, L2 LLM judge (manual)
+- Pre-labeled `golden_set.json` (26 cases)
 
 See [architecture.md](architecture.md) for the eval model today.
