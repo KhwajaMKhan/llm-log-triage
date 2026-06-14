@@ -1,5 +1,5 @@
 # Ad-hoc LLM-as-judge eval — workflow_dispatch only (not a PR gate).
-# Actions → Manual Judge Eval → Run workflow
+# Uses same LOG_TRIAGE_CI_MODEL repo variable as eval-gate (default gpt-4o-mini).
 
 name: Manual Judge Eval
 
@@ -22,6 +22,7 @@ jobs:
     env:
       OBS_BACKEND: ${{ inputs.obs_backend }}
       LOG_TRIAGE_DEFAULT_PROMPT_VERSION: v3
+      LOG_TRIAGE_DEFAULT_MODEL: ${{ vars.LOG_TRIAGE_CI_MODEL || 'gpt-4o-mini' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -33,18 +34,16 @@ jobs:
       - name: Install package
         run: pip install -e ".[dev,obs]"
 
-      - name: Require OPENAI_API_KEY
+      - name: Require API key for CI model
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "::error::OPENAI_API_KEY secret required (judge + triage default)"
-            exit 1
-          fi
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m llm_log_triage.providers --check-secrets
 
       - name: Run pytest judge
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
         run: pytest tests/test_judge.py -m judge -v --tb=short
 

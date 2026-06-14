@@ -1,7 +1,9 @@
 # Golden set — `golden_set.json`
 
 **Purpose:** Fixed labeled examples for regression evals and fair tool comparison.  
-**Used by:** `pytest -m llm`, notebook EDD cells, `python -m llm_log_triage.langsmith_eval --sync-dataset`.
+**Used by:** `pytest -m llm` (CI merge gate), notebook EDD cells, `langsmith_eval --sync-dataset`.
+
+**CI model:** same 4 supported models as the app — GitHub variable `LOG_TRIAGE_CI_MODEL` (see [architecture.md](../docs/architecture.md#6-model-selection-app--ci)).
 
 ## Schema (each case)
 

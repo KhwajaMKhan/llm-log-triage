@@ -17,6 +17,7 @@ from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel, Field
 
 from llm_log_triage.instrumentation.base import get_callbacks
+from llm_log_triage.providers import provider_for_model
 from llm_log_triage.schema import TriageOutput
 
 load_dotenv()
@@ -61,11 +62,11 @@ JUDGE_PROMPT = ChatPromptTemplate.from_messages(
 
 
 def _build_judge_llm(model: str):
-    """Same OpenAI vs Anthropic routing pattern as chain.py."""
-    if model.startswith("claude") or model.startswith("anthropic"):
+    """Same provider routing as chain.py (providers.resolve_provider)."""
+    if provider_for_model(model) == "anthropic":
         from langchain_anthropic import ChatAnthropic
 
-        return ChatAnthropic(model=model, temperature=0)
+        return ChatAnthropic(model=model)
     from langchain_openai import ChatOpenAI
 
     return ChatOpenAI(model=model, temperature=0)

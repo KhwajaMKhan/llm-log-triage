@@ -27,6 +27,7 @@ flowchart TB
 
   subgraph core [Frozen core]
     INV[chain.invoke]
+    PROV[providers.py 4 models]
     PR[prompts.py v1-v3]
     SCH[schema.py]
     CACHE[cache.py]
@@ -50,6 +51,7 @@ flowchart TB
   UI --> INV
   NB --> INV
   PY --> INV
+  INV --> PROV
   INV --> PR
   INV --> SCH
   INV --> CACHE
@@ -120,7 +122,7 @@ flowchart LR
   EC --> T2
   EC --> T3
   J --> T4
-  T1 --> CI[eval-gate.yml PR]
+  T1 --> CI[eval-gate.yml uses LOG_TRIAGE_CI_MODEL]
   T2 --> LS[LangSmith experiments manual]
   T4 --> MAN[judge manual]
 ```
@@ -128,8 +130,8 @@ flowchart LR
 | Level | Reviewer | CI merge gate? | Manual scripts |
 |-------|----------|----------------|----------------|
 | L0 | Pydantic | `test (free)` | — |
-| L1 | `eval_checks` | **`eval (golden-set)`** | `scripts/run_langsmith_eval_golden.sh` |
-| L2 | `judge.py` | No | `scripts/run_judge_eval.sh` |
+| L1 | `eval_checks` | **`eval (golden-set)`** — model from `LOG_TRIAGE_CI_MODEL`, ≥90% | `scripts/run_langsmith_eval_golden.sh` |
+| L2 | `judge.py` | No | `scripts/run_judge_eval.sh`, `manual-judge-eval.yml` |
 
 ---
 
@@ -138,6 +140,7 @@ flowchart LR
 | Module | Responsibility |
 |--------|----------------|
 | `chain.py` | **Single entry:** `invoke()` — LCEL prompt \| LLM → `TriageOutput` |
+| `providers.py` | **Supported models only:** `MODEL_REGISTRY` (4 models → OpenAI or Anthropic) |
 | `prompts.py` | Prompt templates v1→v3 (`get_prompt`) |
 | `schema.py` | `TriageInput`, `TriageOutput`, enums |
 | `eval_checks.py` | **Single scorer** for golden set (parity) |
@@ -153,7 +156,39 @@ flowchart LR
 
 ---
 
-## 6. Prompt management
+## 6. Model selection (app & CI)
+
+One list of **four supported models** in `providers.py` (`MODEL_REGISTRY`). Streamlit, LangSmith manual workflow, and CI all use this same list.
+
+| Model | Provider | API key |
+|-------|----------|---------|
+| `gpt-4o-mini` **(default)** | OpenAI | `OPENAI_API_KEY` |
+| `gpt-4o` | OpenAI | `OPENAI_API_KEY` |
+| `claude-sonnet-4-6` | Anthropic | `ANTHROPIC_API_KEY` |
+| `claude-opus-4-7` | Anthropic | `ANTHROPIC_API_KEY` |
+
+| Where | Setting |
+|-------|---------|
+| **Local app** | `LOG_TRIAGE_DEFAULT_MODEL` in `.env` (or Streamlit dropdown) |
+| **GitHub CI** | `LOG_TRIAGE_CI_MODEL` repo variable (default `gpt-4o-mini`) |
+
+```mermaid
+flowchart LR
+  REG[providers.MODEL_REGISTRY] --> App[.env LOG_TRIAGE_DEFAULT_MODEL]
+  REG --> CI[LOG_TRIAGE_CI_MODEL variable]
+  App --> K1[Matching API key]
+  CI --> K2[Matching GitHub secret]
+  K1 --> Run[CLI / Streamlit / notebook]
+  K2 --> Gate[eval-gate.yml ≥90%]
+```
+
+CI workflows call `python -m llm_log_triage.providers --check-secrets` before live evals. Unknown model ids are rejected — add new models to `MODEL_REGISTRY` first.
+
+**Interface tags:** CI pytest runs use `interface=pytest` (not `github`). See [README](../README.md#interface-tags-interface).
+
+---
+
+## 7. Prompt management
 
 Prompts are **versioned Python strings** in `prompts.py`:
 
@@ -171,22 +206,25 @@ Prompts live in **git** (`prompts.py`) — readable, diffable, version-controlle
 
 ---
 
-## 7. If you want to change X, edit Y
+## 8. If you want to change X, edit Y
 
-| Goal(X)| Where(Y) |
-|------|--------|
-| Triage behavior / model | `chain.py`, `.env` `LOG_TRIAGE_DEFAULT_MODEL` |
+| Goal | Where |
+|------|-------|
+| Supported models list | `providers.py` `MODEL_REGISTRY` + Streamlit / workflow dropdowns |
+| Local default model | `.env` `LOG_TRIAGE_DEFAULT_MODEL` |
+| CI eval model | GitHub variable `LOG_TRIAGE_CI_MODEL` + matching secret |
+| Triage behavior | `chain.py`, `prompts.py` |
 | Prompt text | `prompts.py` (new version → re-run golden eval) |
 | Pass/fail rules | `eval_checks.py` + `data/golden_set.json` labels |
 | Judge bar | `judge.py` `PASS_THRESHOLD` |
-| Observability tool | `src/llm_log_triage/instrumentation/`, `OBS_BACKEND` |
+| Observability tool | `instrumentation/`, `OBS_BACKEND` |
 | LangSmith experiment | `langsmith_eval.py`, `scripts/run_langsmith_eval_*.sh` |
-| CI merge gate | `.github/workflows/eval-gate.yml` |
+| CI merge gate | `.github/workflows/eval-gate.yml`, `.github/workflows/README.md` |
 | Manual eval / judge | `scripts/run_*.sh`, `.github/workflows/manual-*.yml` |
 
 ---
 
-## 8. Data & artifacts
+## 9. Data & artifacts
 
 ```
 data/golden_set.json          ← source of truth (26 cases)
@@ -200,11 +238,13 @@ LangSmith dataset `log-triage-golden-set-v3` is a **synced copy** for experiment
 
 ---
 
-## 9. Related docs
+## 10. Related docs
 
 | Doc | Purpose |
 |-----|---------|
-| [`../README.md`](../README.md) | Clone, setup, run, test |
+| [`../README.md`](../README.md) | Clone, setup, 4-model picker, EDD, workflows |
+| [`README.md`](README.md) | Docs index — why `docs/` vs root |
+| [`ROADMAP.md`](ROADMAP.md) | Future features + golden-set baselines |
 | [`../data/golden_set.README.md`](../data/golden_set.README.md) | Golden-set case schema |
 | [`eval-runs/README.md`](eval-runs/README.md) | Sample eval report artifacts |
 | [`../scripts/README.md`](../scripts/README.md) | Manual LangSmith / judge scripts |
