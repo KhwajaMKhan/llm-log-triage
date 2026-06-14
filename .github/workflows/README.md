@@ -5,16 +5,22 @@ Two workflows run on every **push** and **pull_request** to `main`:
 | Workflow | Job name | API keys | Purpose |
 |----------|----------|----------|---------|
 | [`ci.yml`](ci.yml) | `test (free)` | None | Deterministic tests (`pytest -m "not llm"`) |
-| [`eval-gate.yml`](eval-gate.yml) | `eval (golden-set)` | `OPENAI_API_KEY` | Merge-blocking golden-set eval (`pytest -m llm`, prompt v3, ≥90%) |
+| [`eval-gate.yml`](eval-gate.yml) | `eval (golden-set)` | Key for CI model — see below | Merge-blocking golden-set eval (`pytest -m llm`, prompt v3, ≥90%) |
 
 ## One-time setup
 
-1. **Repository secret:** Settings → Secrets and variables → Actions → `OPENAI_API_KEY`
-2. **Branch protection:** Settings → Branches → `main` → Require status checks:
+1. **Repository secrets** (Settings → Secrets and variables → Actions):
+   - OpenAI CI (default): `OPENAI_API_KEY`
+   - Anthropic CI (optional): `ANTHROPIC_API_KEY`
+2. **Repository variable** (Settings → Secrets and variables → Actions → **Variables** tab):
+   - `LOG_TRIAGE_CI_MODEL` — default `gpt-4o-mini` if unset. Tested values: `gpt-4o-mini`, `gpt-4o`, `claude-sonnet-4-6`, `claude-opus-4-7`
+3. **Branch protection:** Settings → Branches → `main` → Require status checks:
    - `test (free)`
    - `eval (golden-set)`
 
 PRs cannot merge unless both pass.
+
+**CI model rule:** `eval-gate.yml` sets `LOG_TRIAGE_DEFAULT_MODEL` from `LOG_TRIAGE_CI_MODEL` and requires the **matching** secret (OpenAI key for `gpt-*`, Anthropic key for `claude-*`).
 
 ## Cost note
 
@@ -28,7 +34,7 @@ Trigger from **Actions** tab → select workflow → **Run workflow**.
 
 | Workflow | Purpose | Secrets |
 |----------|---------|---------|
-| [`manual-langsmith-eval.yml`](manual-langsmith-eval.yml) | LangSmith experiment (prompt/model inputs) | `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`, `LANGCHAIN_API_KEY` |
-| [`manual-judge-eval.yml`](manual-judge-eval.yml) | `pytest -m judge` + artifact upload | `OPENAI_API_KEY` |
+| [`manual-langsmith-eval.yml`](manual-langsmith-eval.yml) | LangSmith experiment (prompt + **model dropdown**) | Matching key for selected model + `LANGCHAIN_API_KEY` |
+| [`manual-judge-eval.yml`](manual-judge-eval.yml) | `pytest -m judge` + artifact upload | Key for `LOG_TRIAGE_CI_MODEL` (or default `gpt-4o-mini`) |
 
 Local equivalents: [`scripts/README.md`](../../scripts/README.md).

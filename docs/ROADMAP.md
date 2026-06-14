@@ -16,6 +16,14 @@ Not in scope for the initial public release. Items below are planned enhancement
 |------|-------|
 | Human annotation workflow tests | pytest + optional LangSmith annotation queue sync |
 | Annotation export | JSON/CSV from Streamlit sessions for golden-set curation |
+| **Dual-provider CI matrix** | Optional parallel `eval (golden-set)` jobs on OpenAI + Anthropic with separate pass thresholds (golden set tuned on `gpt-4o-mini` today) |
+
+## Provider / CI alignment
+
+| Item | Notes |
+|------|-------|
+| Provider-aligned CI (shipped v1.1+) | `LOG_TRIAGE_CI_MODEL` repo variable + matching secret — see README *OpenAI vs Anthropic* |
+| Per-PR provider override | workflow_dispatch input on eval gate (future) |
 
 ## Current scope (shipped)
 

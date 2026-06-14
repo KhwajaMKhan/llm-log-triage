@@ -1,6 +1,6 @@
-# Merge-blocking golden-set eval — requires OPENAI_API_KEY repo secret.
-# Enable branch protection on main → require status check "eval (golden-set)".
-# See .github/workflows/README.md and docs/architecture.md
+# Merge-blocking golden-set eval — requires API key for the pinned CI model.
+# Set repository variable LOG_TRIAGE_CI_MODEL (default: gpt-4o-mini) and matching secret.
+# See .github/workflows/README.md
 
 name: Eval Gate
 
@@ -17,6 +17,7 @@ jobs:
     env:
       OBS_BACKEND: none
       LOG_TRIAGE_DEFAULT_PROMPT_VERSION: v3
+      LOG_TRIAGE_DEFAULT_MODEL: ${{ vars.LOG_TRIAGE_CI_MODEL || 'gpt-4o-mini' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,16 +29,28 @@ jobs:
       - name: Install package
         run: pip install -e ".[dev]"
 
-      - name: Require OPENAI_API_KEY
+      - name: Require API key for CI model
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LOG_TRIAGE_DEFAULT_MODEL: ${{ env.LOG_TRIAGE_DEFAULT_MODEL }}
         run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "::error::Add OPENAI_API_KEY to repository secrets (Settings → Secrets → Actions)"
-            exit 1
+          echo "CI model: $LOG_TRIAGE_DEFAULT_MODEL"
+          if [[ "$LOG_TRIAGE_DEFAULT_MODEL" == claude* ]] || [[ "$LOG_TRIAGE_DEFAULT_MODEL" == anthropic* ]]; then
+            if [ -z "$ANTHROPIC_API_KEY" ]; then
+              echo "::error::ANTHROPIC_API_KEY secret required when LOG_TRIAGE_CI_MODEL is a Claude model"
+              exit 1
+            fi
+          else
+            if [ -z "$OPENAI_API_KEY" ]; then
+              echo "::error::OPENAI_API_KEY secret required when LOG_TRIAGE_CI_MODEL is an OpenAI model (default gpt-4o-mini)"
+              exit 1
+            fi
           fi
 
       - name: Golden-set eval gate (pytest -m llm)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LOG_TRIAGE_DEFAULT_MODEL: ${{ env.LOG_TRIAGE_DEFAULT_MODEL }}
         run: pytest tests/test_golden_set.py -m llm -v --tb=short

@@ -33,19 +33,33 @@ jobs:
       - name: Install package
         run: pip install -e ".[dev,obs]"
 
-      - name: Require OPENAI_API_KEY
+      - name: Require API key for CI model
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LOG_TRIAGE_DEFAULT_MODEL: ${{ vars.LOG_TRIAGE_CI_MODEL || 'gpt-4o-mini' }}
         run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "::error::OPENAI_API_KEY secret required (judge + triage default)"
-            exit 1
+          MODEL="${LOG_TRIAGE_DEFAULT_MODEL:-gpt-4o-mini}"
+          echo "Judge/triage CI model: $MODEL"
+          if [[ "$MODEL" == claude* ]] || [[ "$MODEL" == anthropic* ]]; then
+            if [ -z "$ANTHROPIC_API_KEY" ]; then
+              echo "::error::ANTHROPIC_API_KEY secret required for Claude models"
+              exit 1
+            fi
+          else
+            if [ -z "$OPENAI_API_KEY" ]; then
+              echo "::error::OPENAI_API_KEY secret required for OpenAI models"
+              exit 1
+            fi
           fi
 
       - name: Run pytest judge
         env:
+          OBS_BACKEND: ${{ inputs.obs_backend }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+          LOG_TRIAGE_DEFAULT_MODEL: ${{ vars.LOG_TRIAGE_CI_MODEL || 'gpt-4o-mini' }}
         run: pytest tests/test_judge.py -m judge -v --tb=short
 
       - name: Upload judge report

@@ -16,10 +16,15 @@ on:
           - v2
           - v3
       model:
-        description: Model id (gpt-4o-mini, claude-3-5-haiku-latest, etc.)
+        description: Model (tested in development — see chain.py SUPPORTED_MODELS)
         required: true
         default: gpt-4o-mini
-        type: string
+        type: choice
+        options:
+          - gpt-4o-mini
+          - gpt-4o
+          - claude-sonnet-4-6
+          - claude-opus-4-7
       max_cases:
         description: Max cases (all or number)
         required: true
