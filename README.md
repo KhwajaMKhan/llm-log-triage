@@ -153,7 +153,7 @@ pytest tests/ -m llm -v          # golden set gate (prompt v3, ≥90%)
 pytest tests/ -m smoke -v        # one live call
 ```
 
-More detail: [`docs/architecture.md`](docs/architecture.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`data/golden_set.README.md`](data/golden_set.README.md)
+More detail: [`docs/README.md`](docs/README.md) · [`docs/architecture.md`](docs/architecture.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`data/golden_set.README.md`](data/golden_set.README.md)
 
 ## What's in the box
 

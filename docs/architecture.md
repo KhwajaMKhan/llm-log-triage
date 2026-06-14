@@ -243,6 +243,7 @@ LangSmith dataset `log-triage-golden-set-v3` is a **synced copy** for experiment
 | Doc | Purpose |
 |-----|---------|
 | [`../README.md`](../README.md) | Clone, setup, 4-model picker, EDD, workflows |
+| [`README.md`](README.md) | Docs index — why `docs/` vs root |
 | [`ROADMAP.md`](ROADMAP.md) | Future features + golden-set baselines |
 | [`../data/golden_set.README.md`](../data/golden_set.README.md) | Golden-set case schema |
 | [`eval-runs/README.md`](eval-runs/README.md) | Sample eval report artifacts |

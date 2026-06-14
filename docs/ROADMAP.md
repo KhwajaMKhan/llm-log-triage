@@ -26,7 +26,7 @@ Planned enhancements beyond the v1.0 public release. For what ships today, see [
 | `gpt-4o-mini` | ≥90% | 4/4 | Default — set `LOG_TRIAGE_CI_MODEL` or leave unset |
 | `claude-sonnet-4-6` | 21/22 (95.5%) | 4/4 | Set `LOG_TRIAGE_CI_MODEL` + `ANTHROPIC_API_KEY` |
 
-## Shipped today (v1.0)
+## Shipped in v1.0.0
 
 - **4 predefined models** — `providers.MODEL_REGISTRY`; pick in Streamlit or `.env`
 - **CI** — same 4 models via `LOG_TRIAGE_CI_MODEL` (default `gpt-4o-mini`)

@@ -3,7 +3,7 @@
 Supported models (Streamlit dropdown, LangSmith workflow, local .env):
   gpt-4o-mini, gpt-4o, claude-sonnet-4-6, claude-opus-4-7
 
-CI merge gate (eval-gate.yml): fixed gpt-4o-mini + OPENAI_API_KEY only.
+CI merge gate (eval-gate.yml): LOG_TRIAGE_CI_MODEL repo variable (default gpt-4o-mini) + matching API key.
 """
 
 from __future__ import annotations
