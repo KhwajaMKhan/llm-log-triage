@@ -4,9 +4,34 @@
 
 **LangChain LCEL app:** raw log text in → structured JSON out (severity, category, cause, action).
 
-Built with **Evaluation-Driven Development (EDD)**: a frozen golden set, **code as reviewer** (deterministic checks in CI), and an optional **LLM as judge** (coherence + actionability). Golden-set evals, pytest CI gate, optional LangSmith tracing/experiments, and three interfaces (CLI, Streamlit, notebook).
+Golden-set evals, pytest CI gate, optional LangSmith tracing/experiments, and three interfaces (CLI, Streamlit, notebook).
 
 **Architecture & diagrams:** system design, module map, and Mermaid flowcharts — see [docs/architecture.md](docs/architecture.md).
+
+## Evaluation-Driven Development (EDD)
+
+**What it is:** Evaluation-Driven Development means you **define how success looks before you ship changes** — fixed test cases (a golden set), automated scoring, and CI gates — instead of relying on manual “try a prompt and eyeball it.”
+
+**Purpose:** Give LLM apps the same discipline as traditional software: measurable quality, regression detection when prompts or models change, and confidence that a green build means something real.
+
+**Why we need it:** LLM output is non-deterministic and easy to break silently. A small prompt tweak can pass one demo log and fail twenty others. EDD catches that **before merge**, not in production.
+
+**Benefits:**
+
+- **Repeatable quality bar** — same golden set, same scorer, every run
+- **Faster iteration** — change prompt/model, run evals, see pass rate immediately
+- **Teachable OSS pattern** — others can clone, run tests, and trust the gate
+- **Observability-friendly** — traces and offline experiments plug into the same eval harness
+
+**App first, then EDD.** You cannot meaningfully practice EDD in the abstract — you need a **concrete app** to evaluate. This repo’s **LLM Log Triage** app is that vehicle: a small, frozen LangChain pipeline with labeled logs and structured JSON output. We apply EDD **to this app** (golden set, code reviewer, optional LLM judge, CI). Running the app helps you **see** what each eval layer is checking; the eval layers help you **trust** the app as you change it.
+
+| Layer | Reviewer | What it checks | Merge gate? |
+| ----- | -------- | -------------- | ----------- |
+| **L0** | Pydantic schema | Valid JSON shape | Yes (`test (free)` CI) |
+| **L1** | **Code reviewer** (`eval_checks.py`) | Severity, category, keywords vs `data/golden_set.json` | Yes (`eval (golden-set)` CI) |
+| **L2** | **LLM judge** (`judge.py`) | Coherence + actionability ≥ 4/5 | Manual / notebook only |
+
+The same L1 scorer (`eval_checks.score_case`) runs in pytest, the notebook, and LangSmith experiments — **offline parity**. Details and flowcharts: [docs/architecture.md](docs/architecture.md#4-eval-architecture-three-levels).
 
 ## Quick start
 
@@ -49,7 +74,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 ```mermaid
 flowchart LR
-  Four[Same 4 models] --> App[App: .env DEFAULT_MODEL]
+  Four[Same 4 models] --> App[App: .env LOG_TRIAGE_DEFAULT_MODEL]
   Four --> CI[CI: LOG_TRIAGE_CI_MODEL variable]
   App --> Key1[Matching API key]
   CI --> Key2[Matching API key]
@@ -129,20 +154,6 @@ pytest tests/ -m smoke -v        # one live call
 ```
 
 More detail: [`docs/architecture.md`](docs/architecture.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`data/golden_set.README.md`](data/golden_set.README.md)
-
-## Evaluation-Driven Development (EDD)
-
-This repo is a teaching/reference implementation of EDD for LLM apps — not just “call an API and hope.”
-
-| Layer | Reviewer | What it checks | Merge gate? |
-| ----- | -------- | -------------- | ----------- |
-| **L0** | Pydantic schema | Valid JSON shape | Yes (`test (free)` CI) |
-| **L1** | **Code reviewer** (`eval_checks.py`) | Severity, category, keywords vs `data/golden_set.json` | Yes (`eval (golden-set)` CI) |
-| **L2** | **LLM judge** (`judge.py`) | Coherence + actionability ≥ 4/5 | Manual / notebook only |
-
-Same scorer (`eval_checks.score_case`) runs in pytest, the notebook, and LangSmith experiments — **offline parity**. Prompt or model changes must pass the golden set before merge.
-
-Flowcharts (containers, request sequence, eval levels): [docs/architecture.md](docs/architecture.md).
 
 ## What's in the box
 
