@@ -25,6 +25,13 @@ Not in scope for the initial public release. Items below are planned enhancement
 | Provider-aligned CI (shipped v1.1+) | `LOG_TRIAGE_CI_MODEL` repo variable + matching secret — see README *OpenAI vs Anthropic* |
 | Per-PR provider override | workflow_dispatch input on eval gate (future) |
 
+### Golden-set baselines (prompt v3, local eval)
+
+| Model | Normal pass rate | Adversarial | Notes |
+|-------|------------------|-------------|-------|
+| `gpt-4o-mini` | ≥90% (CI gate default) | 4/4 | Original tuned baseline |
+| `claude-sonnet-4-6` | **21/22 (95.5%)** | 4/4 | Fail: `gs-013` severity mismatch (2026-06 local run) |
+
 ## Current scope (shipped)
 
 - L0 schema, L1 code reviewer (`eval_checks`), L2 LLM judge (manual)
