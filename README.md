@@ -39,18 +39,22 @@ LOG_TRIAGE_DEFAULT_MODEL=claude-sonnet-4-6
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-**CI (merge gate):** always **`gpt-4o-mini` + `OPENAI_API_KEY`** — one fixed EDD baseline for all contributors. Anthropic is for **local runs / Streamlit / manual LangSmith experiments**, not the PR gate ([docs/ROADMAP.md](docs/ROADMAP.md) for future Anthropic CI).
+**CI (merge gate):** pick the **same model** via repo variable `LOG_TRIAGE_CI_MODEL` (default `gpt-4o-mini`) + matching secret. Same 4 choices as the app — no separate CI model list.
+
+| Where | Setting |
+| ----- | ------- |
+| **Local app** | `LOG_TRIAGE_DEFAULT_MODEL` in `.env` |
+| **GitHub CI** | `LOG_TRIAGE_CI_MODEL` in Settings → Variables |
+| **Secrets** | `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY` (whichever models you use) |
 
 ```mermaid
 flowchart LR
-  subgraph app [Your app]
-    Pick[Pick model from table] --> Key[Set matching API key]
-    Key --> Run[CLI / Streamlit / notebook]
-  end
-  subgraph ci [GitHub CI]
-    Fixed[gpt-4o-mini fixed] --> OpenAI[OPENAI_API_KEY secret]
-    OpenAI --> Gate[eval golden-set ≥90%]
-  end
+  Four[Same 4 models] --> App[App: .env DEFAULT_MODEL]
+  Four --> CI[CI: LOG_TRIAGE_CI_MODEL variable]
+  App --> Key1[Matching API key]
+  CI --> Key2[Matching API key]
+  Key1 --> Run[CLI / Streamlit / notebook]
+  Key2 --> Gate[eval golden-set ≥90%]
 ```
 
 ### Run
@@ -190,16 +194,16 @@ Four workflows live under [`.github/workflows/`](.github/workflows/). See also [
 | Workflow file | Job name | Trigger | API keys | What it does |
 |---------------|----------|---------|----------|--------------|
 | [`ci.yml`](.github/workflows/ci.yml) | `test (free)` | **Automatic** — `push` / `pull_request` → `main` | None | Deterministic tests only: `pytest -m "not llm"`. Schema, eval logic, instrumentation mocks — no live LLM calls. |
-| [`eval-gate.yml`](.github/workflows/eval-gate.yml) | `eval (golden-set)` | **Automatic** — `push` / `pull_request` → `main` | `OPENAI_API_KEY` | Golden-set gate — **fixed** `gpt-4o-mini`, prompt v3, ≥90%. ~26 LLM calls/run. |
+| [`eval-gate.yml`](.github/workflows/eval-gate.yml) | `eval (golden-set)` | **Automatic** — `push` / `pull_request` → `main` | Matching key for `LOG_TRIAGE_CI_MODEL` | Same 4 models as app (repo variable; default `gpt-4o-mini`). Golden-set ≥90%. |
 
 ### Manual only (`workflow_dispatch` — you click Run)
 
 | Workflow file | Job name | Trigger | API keys | What it does |
 |---------------|----------|---------|----------|--------------|
-| [`manual-langsmith-eval.yml`](.github/workflows/manual-langsmith-eval.yml) | `manual langsmith eval` | **Manual** — Actions → *Manual LangSmith Eval* → Run workflow | Matching key for selected model + `LANGCHAIN_API_KEY` | Ad-hoc LangSmith experiment. **Model dropdown:** `gpt-4o-mini`, `gpt-4o`, `claude-sonnet-4-6`, `claude-opus-4-7`. Not a PR gate. |
-| [`manual-judge-eval.yml`](.github/workflows/manual-judge-eval.yml) | `manual judge eval` | **Manual** — Actions → *Manual Judge Eval* → Run workflow | `OPENAI_API_KEY` (+ `LANGCHAIN_API_KEY` if tracing) | L2 judge eval — `gpt-4o-mini`. Not a PR gate. |
+| [`manual-langsmith-eval.yml`](.github/workflows/manual-langsmith-eval.yml) | `manual langsmith eval` | **Manual** — model **dropdown** | Matching key + `LANGCHAIN_API_KEY` | LangSmith experiment (4 models). Not a PR gate. |
+| [`manual-judge-eval.yml`](.github/workflows/manual-judge-eval.yml) | `manual judge eval` | **Manual** | Matching key for `LOG_TRIAGE_CI_MODEL` | L2 judge — same CI model variable. Not a PR gate. |
 
-**One-time setup:** Settings → Secrets → Actions → add `OPENAI_API_KEY`. See [Pick a model](#pick-a-model-4-supported) above.
+**One-time setup:** Settings → Secrets → add `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY`; Variables → `LOG_TRIAGE_CI_MODEL` (default `gpt-4o-mini`). See [Pick a model](#pick-a-model-4-supported) above.
 
 ### Run manual judge eval
 

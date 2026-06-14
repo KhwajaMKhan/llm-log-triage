@@ -14,7 +14,7 @@ Not in scope for the v1.0 public release. Items below are planned for later iter
 
 | Item | Notes |
 |------|-------|
-| **Anthropic CI gate** | Optional second merge check (today: CI is OpenAI `gpt-4o-mini` only) |
+| **Anthropic CI gate** | Shipped via `LOG_TRIAGE_CI_MODEL` + `ANTHROPIC_API_KEY` (same 4-model picker as app) |
 | **Dual-provider CI matrix** | Parallel eval jobs with per-provider pass thresholds |
 | **Cross-model judge baselines** | Triage + judge on different providers (experiment today, no baseline) |
 | Human annotation workflow tests | pytest + LangSmith annotation queue |
@@ -25,12 +25,12 @@ Not in scope for the v1.0 public release. Items below are planned for later iter
 | Model | Normal pass rate | Adversarial | CI today? |
 |-------|------------------|-------------|-----------|
 | `gpt-4o-mini` | ≥90% | 4/4 | **Yes** (merge gate) |
-| `claude-sonnet-4-6` | 21/22 (95.5%) | 4/4 | Local / LangSmith manual only |
+| `claude-sonnet-4-6` | 21/22 (95.5%) | 4/4 | Yes (set `LOG_TRIAGE_CI_MODEL`) |
 
 ## Current scope (shipped)
 
 - **4 predefined models** — pick in Streamlit or `.env`; matching API key only
-- **CI:** fixed `gpt-4o-mini` + `OPENAI_API_KEY` (EDD L1 gate)
+- **CI:** `LOG_TRIAGE_CI_MODEL` — same 4 models as app (default `gpt-4o-mini`)
 - L0 schema, L1 code reviewer, L2 LLM judge (manual)
 - Pre-labeled `golden_set.json` (26 cases)
 
