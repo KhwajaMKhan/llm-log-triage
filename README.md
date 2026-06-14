@@ -128,7 +128,7 @@ pytest tests/ -m llm -v          # golden set gate (prompt v3, ≥90%)
 pytest tests/ -m smoke -v        # one live call
 ```
 
-More detail: `[docs/architecture.md](docs/architecture.md)` · `[data/golden_set.README.md](data/golden_set.README.md)`
+More detail: [`docs/architecture.md`](docs/architecture.md) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`data/golden_set.README.md`](data/golden_set.README.md)
 
 ## Evaluation-Driven Development (EDD)
 
@@ -150,6 +150,7 @@ Flowcharts (containers, request sequence, eval levels): [docs/architecture.md](d
 | Piece                                  | Role                                       |
 | -------------------------------------- | ------------------------------------------ |
 | `src/llm_log_triage/chain.py`          | LCEL triage pipeline (`invoke`)            |
+| `src/llm_log_triage/providers.py`      | 4 supported models → OpenAI or Anthropic   |
 | `data/golden_set.json`                 | 26 labeled eval cases                      |
 | `src/llm_log_triage/eval_checks.py`    | Deterministic scorer (pytest + LangSmith)  |
 | `src/llm_log_triage/langsmith_eval.py` | Dataset sync + offline experiments         |
