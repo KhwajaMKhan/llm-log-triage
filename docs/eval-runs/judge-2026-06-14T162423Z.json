@@ -1,0 +1,102 @@
+{
+  "timestamp": "2026-06-14T16:24:23.281572+00:00",
+  "judge_model": "gpt-4o-mini",
+  "pass_threshold_per_dimension": 4,
+  "pass_rate_threshold": 0.9,
+  "cases_run": 5,
+  "cases_passed": 5,
+  "pass_rate": 1.0,
+  "overall_pass": true,
+  "cases": [
+    {
+      "id": "gs-001",
+      "service_name": "payments-api",
+      "log_preview": "2026-05-28T14:02:11Z ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused",
+      "triage": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "likely_cause": "Database is unreachable due to connection refusal.",
+        "suggested_action": "Check if the database service is running and accessible from the payments-api.",
+        "confidence": 0.9
+      },
+      "judge": {
+        "coherence": 5,
+        "actionability": 5,
+        "rationale": "The assessment logically matches the log evidence, as the log clearly states a connection failure to the database, which aligns with the identified likely cause. The suggested action is specific and executable, instructing the on-call engineer to check the database service's status and accessibility."
+      },
+      "passed": true
+    },
+    {
+      "id": "gs-002",
+      "service_name": "auth-service",
+      "log_preview": "2026-05-28T14:05:33Z FATAL auth-service OOMKilled container exceeded memory limit 512Mi",
+      "triage": {
+        "severity": "SEV1",
+        "category": "resource",
+        "likely_cause": "Container exceeded memory limit",
+        "suggested_action": "Increase memory limit for the container or optimize memory usage in the application.",
+        "confidence": 1.0
+      },
+      "judge": {
+        "coherence": 5,
+        "actionability": 4,
+        "rationale": "The assessment is coherent with the log evidence, as it correctly identifies the cause of the OOMKilled event due to exceeding the memory limit. The suggested action is actionable, providing two clear options: increasing the memory limit or optimizing memory usage, though it could be more specific on how to optimize."
+      },
+      "passed": true
+    },
+    {
+      "id": "gs-003",
+      "service_name": "api-gateway",
+      "log_preview": "2026-05-28T14:08:02Z WARN api-gateway upstream latency p99=3200ms target=500ms service=inventory-svc",
+      "triage": {
+        "severity": "SEV3",
+        "category": "dependency",
+        "likely_cause": "Upstream service (inventory-svc) is experiencing high latency.",
+        "suggested_action": "Investigate the performance of the inventory-svc and optimize its response time.",
+        "confidence": 0.9
+      },
+      "judge": {
+        "coherence": 5,
+        "actionability": 5,
+        "rationale": "The assessment accurately reflects the log evidence, identifying the high latency of the upstream service as the likely cause. The suggested action is specific and executable, directing the on-call team to investigate and optimize the performance of the inventory service."
+      },
+      "passed": true
+    },
+    {
+      "id": "gs-004",
+      "service_name": "checkout-web",
+      "log_preview": "2026-05-28T14:10:44Z ERROR checkout-web JWT validation failed: token expired for user_id=8821",
+      "triage": {
+        "severity": "SEV3",
+        "category": "auth",
+        "likely_cause": "JWT token expired for user_id=8821",
+        "suggested_action": "Prompt user to re-authenticate or refresh the token.",
+        "confidence": 0.9
+      },
+      "judge": {
+        "coherence": 5,
+        "actionability": 5,
+        "rationale": "The assessment clearly matches the log evidence, stating that the JWT token expired for the specified user ID, which is consistent with the log message. The suggested action is specific and executable, instructing to prompt the user to re-authenticate or refresh the token, which is a direct response to the issue identified."
+      },
+      "passed": true
+    },
+    {
+      "id": "gs-005",
+      "service_name": "config-agent",
+      "log_preview": "2026-05-28T14:12:01Z ERROR config-agent failed to parse /etc/app/settings.yaml: yaml.scanner.ScannerError at line 42",
+      "triage": {
+        "severity": "SEV2",
+        "category": "config",
+        "likely_cause": "YAML parse error in configuration file",
+        "suggested_action": "Check the syntax of the YAML file at line 42 and correct any errors.",
+        "confidence": 0.9
+      },
+      "judge": {
+        "coherence": 5,
+        "actionability": 5,
+        "rationale": "The assessment accurately reflects the log evidence, identifying a YAML parse error as the likely cause, which is directly supported by the log message. The suggested action is specific and executable, instructing the on-call engineer to check and correct the syntax at the specified line in the YAML file."
+      },
+      "passed": true
+    }
+  ]
+}

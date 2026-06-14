@@ -1,0 +1,13 @@
+.venv/
+.cache/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store
+dist/
+*.egg-info/
+notebooks/docs/

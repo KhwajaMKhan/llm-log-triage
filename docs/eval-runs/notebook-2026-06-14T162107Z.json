@@ -1,0 +1,104 @@
+{
+  "timestamp": "2026-06-14T16:21:07.741421+00:00",
+  "session_started": "2026-06-14T16:20:41.928739+00:00",
+  "interface": "notebook",
+  "runs_count": 3,
+  "deterministic_passed": 2,
+  "deterministic_scored": 2,
+  "judge_passed": 0,
+  "judge_scored": 0,
+  "runs": [
+    {
+      "timestamp": "2026-06-14T16:20:52.276998+00:00",
+      "section": "good_case",
+      "case_id": "gs-001",
+      "interface": "notebook",
+      "service_name": "payments-api",
+      "log_preview": "2026-05-28T14:02:11Z ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused",
+      "injected_triage": false,
+      "meta": {
+        "latency_ms": 0.0,
+        "cached": true,
+        "model": "gpt-4o-mini",
+        "prompt_version": "v3"
+      },
+      "triage": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "likely_cause": "Database is unreachable due to connection refusal.",
+        "suggested_action": "Check if the database service is running and accessible from the payments-api.",
+        "confidence": 0.9,
+        "evidence_lines": [
+          "ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused"
+        ]
+      },
+      "deterministic_checks": {
+        "schema": true,
+        "severity": true,
+        "category": true,
+        "must_mention": true,
+        "passed": true
+      },
+      "passed_deterministic": true
+    },
+    {
+      "timestamp": "2026-06-14T16:20:58.627098+00:00",
+      "section": "adversarial",
+      "case_id": "adv-002",
+      "interface": "notebook",
+      "service_name": "unknown",
+      "log_preview": "asdf jkl; qwerty 12345 !@#$%",
+      "injected_triage": false,
+      "meta": {
+        "latency_ms": 0.0,
+        "cached": true,
+        "model": "gpt-4o-mini",
+        "prompt_version": "v3"
+      },
+      "triage": {
+        "severity": "unknown",
+        "category": "unknown",
+        "likely_cause": "Input is nonsensical and unparseable.",
+        "suggested_action": "Review the log source for issues or provide valid log entries for analysis.",
+        "confidence": 0.1,
+        "evidence_lines": [
+          "asdf jkl; qwerty 12345 !@#$%"
+        ]
+      },
+      "deterministic_checks": {
+        "schema": true,
+        "severity": true,
+        "category": true,
+        "must_mention": true,
+        "adversarial": true,
+        "passed": true
+      },
+      "passed_deterministic": true
+    },
+    {
+      "timestamp": "2026-06-14T16:21:07.741402+00:00",
+      "section": "custom",
+      "case_id": "custom",
+      "interface": "notebook",
+      "service_name": "auth-api",
+      "log_preview": "2026-05-28T14:02:11Z ERROR auth-api connection refused postgres",
+      "injected_triage": false,
+      "meta": {
+        "latency_ms": 2301.4,
+        "cached": false,
+        "model": "gpt-4o-mini",
+        "prompt_version": "v3"
+      },
+      "triage": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "likely_cause": "Postgres database is unreachable due to connection refusal.",
+        "suggested_action": "Check the Postgres service status and network connectivity.",
+        "confidence": 0.9,
+        "evidence_lines": [
+          "2026-05-28T14:02:11Z ERROR auth-api connection refused postgres"
+        ]
+      }
+    }
+  ]
+}

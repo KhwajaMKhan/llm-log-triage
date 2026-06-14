@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-06-14T16:29:47.054094+00:00",
+  "experiment_name": "log-triage-v3-3c4dd097",
+  "dataset": "log-triage-golden-set-v3",
+  "max_cases": 5,
+  "experiment_prefix": "log-triage-v3",
+  "project": "llm-log-triage",
+  "ui_hint": "LangSmith \u2192 Evaluations \u2192 find experiment by name"
+}

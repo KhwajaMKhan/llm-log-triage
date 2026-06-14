@@ -1,0 +1,101 @@
+# Ad-hoc LangSmith golden-set experiment — workflow_dispatch only (not a PR gate).
+# Actions → Eval Gate (manual) → Run workflow
+
+name: Manual LangSmith Eval
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt_version:
+        description: Prompt version (v1, v2, v3)
+        required: true
+        default: v3
+        type: choice
+        options:
+          - v1
+          - v2
+          - v3
+      model:
+        description: Model id (gpt-4o-mini, claude-3-5-haiku-latest, etc.)
+        required: true
+        default: gpt-4o-mini
+        type: string
+      max_cases:
+        description: Max cases (all or number)
+        required: true
+        default: all
+        type: string
+      experiment_prefix:
+        description: LangSmith experiment prefix
+        required: true
+        default: log-triage-v3-manual
+        type: string
+      sync_dataset:
+        description: Sync golden set before run
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  langsmith-eval:
+    name: manual langsmith eval
+    runs-on: ubuntu-latest
+    env:
+      OBS_BACKEND: langsmith
+      LOG_TRIAGE_DEFAULT_PROMPT_VERSION: ${{ inputs.prompt_version }}
+      LOG_TRIAGE_DEFAULT_MODEL: ${{ inputs.model }}
+      LOG_TRIAGE_LANGSMITH_EVAL_MAX_CASES: ${{ inputs.max_cases }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package
+        run: pip install -e ".[dev,obs]"
+
+      - name: Require API keys
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+        run: |
+          if [[ "${{ inputs.model }}" == claude* ]] || [[ "${{ inputs.model }}" == anthropic* ]]; then
+            if [ -z "$ANTHROPIC_API_KEY" ]; then
+              echo "::error::ANTHROPIC_API_KEY secret required for Claude models"
+              exit 1
+            fi
+          else
+            if [ -z "$OPENAI_API_KEY" ]; then
+              echo "::error::OPENAI_API_KEY secret required for OpenAI models"
+              exit 1
+            fi
+          fi
+          if [ -z "$LANGCHAIN_API_KEY" ]; then
+            echo "::error::LANGCHAIN_API_KEY secret required for LangSmith tracing/eval"
+            exit 1
+          fi
+
+      - name: Run langsmith_eval
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+        run: |
+          if [ "${{ inputs.sync_dataset }}" = "true" ]; then
+            python -m llm_log_triage.langsmith_eval --sync-dataset --run \
+              --max-cases "${{ inputs.max_cases }}" \
+              --experiment-prefix "${{ inputs.experiment_prefix }}"
+          else
+            python -m llm_log_triage.langsmith_eval --run --no-sync \
+              --max-cases "${{ inputs.max_cases }}" \
+              --experiment-prefix "${{ inputs.experiment_prefix }}"
+          fi
+
+      - name: Upload eval report
+        uses: actions/upload-artifact@v4
+        with:
+          name: langsmith-eval-report
+          path: docs/eval-runs/langsmith-eval-latest.json

@@ -1,0 +1,43 @@
+# Merge-blocking golden-set eval — requires OPENAI_API_KEY repo secret.
+# Enable branch protection on main → require status check "eval (golden-set)".
+# See .github/workflows/README.md and docs/architecture.md
+
+name: Eval Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  eval-golden-set:
+    name: eval (golden-set)
+    runs-on: ubuntu-latest
+    env:
+      OBS_BACKEND: none
+      LOG_TRIAGE_DEFAULT_PROMPT_VERSION: v3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package
+        run: pip install -e ".[dev]"
+
+      - name: Require OPENAI_API_KEY
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::Add OPENAI_API_KEY to repository secrets (Settings → Secrets → Actions)"
+            exit 1
+          fi
+
+      - name: Golden-set eval gate (pytest -m llm)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: pytest tests/test_golden_set.py -m llm -v --tb=short

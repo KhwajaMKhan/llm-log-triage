@@ -1,0 +1,355 @@
+{
+  "version": "1.0",
+  "cases": [
+    {
+      "id": "gs-001",
+      "service_name": "payments-api",
+      "log_text": "2026-05-28T14:02:11Z ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused",
+      "expected": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "must_mention": [
+          "postgres",
+          "connection refused"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-002",
+      "service_name": "auth-service",
+      "log_text": "2026-05-28T14:05:33Z FATAL auth-service OOMKilled container exceeded memory limit 512Mi",
+      "expected": {
+        "severity": "SEV1",
+        "category": "resource",
+        "must_mention": [
+          "memory",
+          "OOM"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-003",
+      "service_name": "api-gateway",
+      "log_text": "2026-05-28T14:08:02Z WARN api-gateway upstream latency p99=3200ms target=500ms service=inventory-svc",
+      "expected": {
+        "severity": "SEV3",
+        "category": "dependency",
+        "must_mention": [
+          "latency",
+          "inventory"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-004",
+      "service_name": "checkout-web",
+      "log_text": "2026-05-28T14:10:44Z ERROR checkout-web JWT validation failed: token expired for user_id=8821",
+      "expected": {
+        "severity": "SEV3",
+        "category": "auth",
+        "must_mention": [
+          "JWT",
+          "expired"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-005",
+      "service_name": "config-agent",
+      "log_text": "2026-05-28T14:12:01Z ERROR config-agent failed to parse /etc/app/settings.yaml: yaml.scanner.ScannerError at line 42",
+      "expected": {
+        "severity": "SEV2",
+        "category": "config",
+        "must_mention": [
+          "yaml",
+          "parse"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-006",
+      "service_name": "redis-cache",
+      "log_text": "2026-05-28T14:15:22Z ERROR redis-cache READONLY You can't write against a read only replica",
+      "expected": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "must_mention": [
+          "read only",
+          "replica"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-007",
+      "service_name": "notification-svc",
+      "log_text": "2026-05-28T14:18:09Z ERROR notification-svc SMTP handshake failed: 535 Authentication credentials invalid",
+      "expected": {
+        "severity": "SEV3",
+        "category": "auth",
+        "must_mention": [
+          "SMTP",
+          "Authentication"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-008",
+      "service_name": "search-indexer",
+      "log_text": "2026-05-28T14:20:55Z WARN search-indexer disk usage 92% on /var/lib/elasticsearch",
+      "expected": {
+        "severity": "SEV3",
+        "category": "resource",
+        "must_mention": [
+          "disk"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-009",
+      "service_name": "billing-worker",
+      "log_text": "2026-05-28T14:23:17Z ERROR billing-worker Stripe API returned 503 Service Unavailable retry=3/3 exhausted",
+      "expected": {
+        "severity": "SEV2",
+        "category": "dependency",
+        "must_mention": [
+          "503",
+          "Stripe"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-010",
+      "service_name": "user-profile",
+      "log_text": "2026-05-28T14:25:40Z ERROR user-profile TLS handshake error: certificate has expired",
+      "expected": {
+        "severity": "SEV2",
+        "category": "config",
+        "must_mention": [
+          "certificate",
+          "expired"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-011",
+      "service_name": "metrics-collector",
+      "log_text": "2026-05-28T14:28:03Z INFO metrics-collector scrape completed duration_ms=45 targets=120",
+      "expected": {
+        "severity": "SEV4",
+        "category": "unknown",
+        "must_mention": [
+          "scrape"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-012",
+      "service_name": "order-processor",
+      "log_text": "2026-05-28T14:30:21Z ERROR order-processor deadlock detected on transaction tx_id=99102 rolling back",
+      "expected": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "must_mention": [
+          "deadlock"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-013",
+      "service_name": "cdn-edge",
+      "log_text": "2026-05-28T14:32:44Z ERROR cdn-edge origin timeout after 30s host=static-assets.internal",
+      "expected": {
+        "severity": "SEV2",
+        "category": "dependency",
+        "must_mention": [
+          "timeout",
+          "origin"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-014",
+      "service_name": "feature-flags",
+      "log_text": "2026-05-28T14:35:08Z WARN feature-flags LaunchDarkly stream disconnected reconnecting in 5s",
+      "expected": {
+        "severity": "SEV3",
+        "category": "dependency",
+        "must_mention": [
+          "LaunchDarkly",
+          "disconnected"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-015",
+      "service_name": "k8s-node",
+      "log_text": "2026-05-28T14:37:30Z ERROR k8s-node kubelet Evicted pod payments-api-7f8b9 due to ephemeral-storage pressure",
+      "expected": {
+        "severity": "SEV1",
+        "category": "resource",
+        "must_mention": [
+          "Evicted",
+          "storage"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-016",
+      "service_name": "api-gateway",
+      "log_text": "2026-05-28T14:40:02Z ERROR api-gateway rate limit exceeded client_id=partner-442 quota=1000/min",
+      "expected": {
+        "severity": "SEV3",
+        "category": "resource",
+        "must_mention": [
+          "rate limit"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-017",
+      "service_name": "secrets-vault",
+      "log_text": "2026-05-28T14:42:18Z ERROR secrets-vault seal status: sealed - unseal keys required",
+      "expected": {
+        "severity": "SEV1",
+        "category": "config",
+        "must_mention": [
+          "sealed",
+          "unseal"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-018",
+      "service_name": "webhook-dispatcher",
+      "log_text": "2026-05-28T14:44:55Z ERROR webhook-dispatcher DNS lookup failed for hooks.partner.com: NXDOMAIN",
+      "expected": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "must_mention": [
+          "DNS",
+          "NXDOMAIN"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-019",
+      "service_name": "analytics-etl",
+      "log_text": "2026-05-28T14:47:11Z WARN analytics-etl job lag 45min behind schedule partition=2026-05-28",
+      "expected": {
+        "severity": "SEV3",
+        "category": "resource",
+        "must_mention": [
+          "lag"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-020",
+      "service_name": "sso-bridge",
+      "log_text": "2026-05-28T14:49:33Z ERROR sso-bridge SAML assertion invalid: clock skew too large",
+      "expected": {
+        "severity": "SEV2",
+        "category": "auth",
+        "must_mention": [
+          "SAML",
+          "clock skew"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-021",
+      "service_name": "inventory-svc",
+      "log_text": "2026-05-28T14:51:50Z ERROR inventory-svc HTTP 500 internal error sku=ABC-123 stock check failed",
+      "expected": {
+        "severity": "SEV2",
+        "category": "unknown",
+        "must_mention": [
+          "500",
+          "internal"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "gs-022",
+      "service_name": "log-shipper",
+      "log_text": "2026-05-28T14:54:02Z WARN log-shipper buffer at 85% capacity dropping oldest batches",
+      "expected": {
+        "severity": "SEV3",
+        "category": "resource",
+        "must_mention": [
+          "buffer"
+        ],
+        "adversarial": false
+      }
+    },
+    {
+      "id": "adv-001",
+      "service_name": null,
+      "log_text": "",
+      "expected": {
+        "severity": "unknown",
+        "category": "unknown",
+        "must_mention": [],
+        "adversarial": true,
+        "max_confidence": 0.4
+      }
+    },
+    {
+      "id": "adv-002",
+      "service_name": "unknown",
+      "log_text": "asdf jkl; qwerty 12345 !@#$%",
+      "expected": {
+        "severity": "unknown",
+        "category": "unknown",
+        "must_mention": [],
+        "adversarial": true,
+        "max_confidence": 0.4
+      }
+    },
+    {
+      "id": "adv-003",
+      "service_name": "truncated-svc",
+      "log_text": "2026-05-28T15:00:00Z ER",
+      "expected": {
+        "severity": "unknown",
+        "category": "unknown",
+        "must_mention": [],
+        "adversarial": true,
+        "max_confidence": 0.5
+      }
+    },
+    {
+      "id": "adv-004",
+      "service_name": "spam-log",
+      "log_text": "ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR",
+      "expected": {
+        "severity": "unknown",
+        "category": "unknown",
+        "must_mention": [],
+        "adversarial": true,
+        "max_confidence": 0.5
+      }
+    }
+  ]
+}

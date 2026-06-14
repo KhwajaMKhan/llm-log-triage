@@ -1,0 +1,57 @@
+# Ad-hoc LLM-as-judge eval — workflow_dispatch only (not a PR gate).
+# Actions → Manual Judge Eval → Run workflow
+
+name: Manual Judge Eval
+
+on:
+  workflow_dispatch:
+    inputs:
+      obs_backend:
+        description: OBS_BACKEND (none or langsmith)
+        required: true
+        default: none
+        type: choice
+        options:
+          - none
+          - langsmith
+
+jobs:
+  judge-eval:
+    name: manual judge eval
+    runs-on: ubuntu-latest
+    env:
+      OBS_BACKEND: ${{ inputs.obs_backend }}
+      LOG_TRIAGE_DEFAULT_PROMPT_VERSION: v3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package
+        run: pip install -e ".[dev,obs]"
+
+      - name: Require OPENAI_API_KEY
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::OPENAI_API_KEY secret required (judge + triage default)"
+            exit 1
+          fi
+
+      - name: Run pytest judge
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+        run: pytest tests/test_judge.py -m judge -v --tb=short
+
+      - name: Upload judge report
+        uses: actions/upload-artifact@v4
+        with:
+          name: judge-eval-report
+          path: |
+            docs/eval-runs/judge-latest.json
+            docs/eval-runs/judge-*.json

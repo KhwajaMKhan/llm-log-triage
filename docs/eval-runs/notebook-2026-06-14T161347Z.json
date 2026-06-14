@@ -1,0 +1,239 @@
+{
+  "timestamp": "2026-06-14T16:13:47.050992+00:00",
+  "session_started": "2026-06-14T15:51:22.242006+00:00",
+  "interface": "notebook",
+  "runs_count": 6,
+  "deterministic_passed": 3,
+  "deterministic_scored": 3,
+  "judge_passed": 1,
+  "judge_scored": 2,
+  "runs": [
+    {
+      "timestamp": "2026-06-14T15:53:44.888283+00:00",
+      "section": "good_case",
+      "case_id": "gs-001",
+      "interface": "notebook",
+      "service_name": "payments-api",
+      "log_preview": "2026-05-28T14:02:11Z ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused",
+      "injected_triage": false,
+      "meta": {
+        "latency_ms": 0.0,
+        "cached": true,
+        "model": "gpt-4o-mini",
+        "prompt_version": "v3"
+      },
+      "triage": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "likely_cause": "Database is unreachable due to connection refusal.",
+        "suggested_action": "Check if the database service is running and accessible from the payments-api.",
+        "confidence": 0.9,
+        "evidence_lines": [
+          "ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused"
+        ]
+      },
+      "deterministic_checks": {
+        "schema": true,
+        "severity": true,
+        "category": true,
+        "must_mention": true,
+        "passed": true
+      },
+      "passed_deterministic": true
+    },
+    {
+      "timestamp": "2026-06-14T15:57:33.687087+00:00",
+      "section": "adversarial",
+      "case_id": "adv-002",
+      "interface": "notebook",
+      "service_name": "unknown",
+      "log_preview": "asdf jkl; qwerty 12345 !@#$%",
+      "injected_triage": false,
+      "meta": {
+        "latency_ms": 0.0,
+        "cached": true,
+        "model": "gpt-4o-mini",
+        "prompt_version": "v3"
+      },
+      "triage": {
+        "severity": "unknown",
+        "category": "unknown",
+        "likely_cause": "Input is nonsensical and unparseable.",
+        "suggested_action": "Review the log source for issues or provide valid log entries for analysis.",
+        "confidence": 0.1,
+        "evidence_lines": [
+          "asdf jkl; qwerty 12345 !@#$%"
+        ]
+      },
+      "deterministic_checks": {
+        "schema": true,
+        "severity": true,
+        "category": true,
+        "must_mention": true,
+        "adversarial": true,
+        "passed": true
+      },
+      "passed_deterministic": true
+    },
+    {
+      "timestamp": "2026-06-14T16:00:28.143889+00:00",
+      "section": "custom",
+      "case_id": "custom",
+      "interface": "notebook",
+      "service_name": "it does not makes sense what this logs is about",
+      "log_preview": "2026-05-28T14:02:11Z ERROR auth-api connection refused postgres",
+      "injected_triage": false,
+      "meta": {
+        "latency_ms": 4773.8,
+        "cached": false,
+        "model": "gpt-4o-mini",
+        "prompt_version": "v3"
+      },
+      "triage": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "likely_cause": "Postgres database is unreachable due to connection refusal.",
+        "suggested_action": "Check the Postgres database service status and network connectivity.",
+        "confidence": 0.9,
+        "evidence_lines": [
+          "2026-05-28T14:02:11Z ERROR auth-api connection refused postgres"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-06-14T16:02:44.221441+00:00",
+      "section": "judge",
+      "case_id": "gs-001",
+      "interface": "notebook",
+      "service_name": "payments-api",
+      "log_preview": "2026-05-28T14:02:11Z ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused",
+      "injected_triage": false,
+      "meta": {
+        "latency_ms": 0.0,
+        "cached": true,
+        "model": "gpt-4o-mini",
+        "prompt_version": "v3"
+      },
+      "triage": {
+        "severity": "SEV2",
+        "category": "connectivity",
+        "likely_cause": "Database is unreachable due to connection refusal.",
+        "suggested_action": "Check if the database service is running and accessible from the payments-api.",
+        "confidence": 0.9,
+        "evidence_lines": [
+          "ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused"
+        ]
+      },
+      "deterministic_checks": {
+        "schema": true,
+        "severity": true,
+        "category": true,
+        "must_mention": true,
+        "passed": true
+      },
+      "passed_deterministic": true,
+      "judge": {
+        "coherence": 5,
+        "actionability": 5,
+        "rationale": "The assessment logically matches the log evidence, as the log clearly states a connection failure to the database, which aligns with the identified likely cause. The suggested action is specific and executable, instructing the on-call engineer to check the database service's status and accessibility.",
+        "passed": true
+      },
+      "passed_judge": true
+    },
+    {
+      "timestamp": "2026-06-14T16:04:22.726700+00:00",
+      "section": "judge_fail",
+      "case_id": "judge-fail-smoke",
+      "interface": "notebook",
+      "service_name": null,
+      "log_preview": "2026-05-28T14:02:11Z ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused",
+      "injected_triage": true,
+      "triage": {
+        "severity": "SEV4",
+        "category": "unknown",
+        "likely_cause": "No issue here; its healthy.",
+        "suggested_action": "No action required.",
+        "confidence": 0.1,
+        "evidence_lines": []
+      },
+      "judge": {
+        "coherence": 1,
+        "actionability": 1,
+        "rationale": "The assessment contradicts the log evidence, which indicates a connection failure to the database. The suggested action of 'No action required' is not executable given the error present in the log.",
+        "passed": false
+      },
+      "passed_judge": false
+    },
+    {
+      "timestamp": "2026-06-14T16:13:47.050977+00:00",
+      "section": "batch",
+      "case_id": "batch-5",
+      "interface": "notebook",
+      "service_name": null,
+      "log_preview": "",
+      "injected_triage": false,
+      "batch_cases": [
+        {
+          "id": "gs-001",
+          "passed": true,
+          "checks": {
+            "schema": true,
+            "severity": true,
+            "category": true,
+            "must_mention": true,
+            "passed": true
+          }
+        },
+        {
+          "id": "gs-002",
+          "passed": true,
+          "checks": {
+            "schema": true,
+            "severity": true,
+            "category": true,
+            "must_mention": true,
+            "passed": true
+          }
+        },
+        {
+          "id": "gs-003",
+          "passed": true,
+          "checks": {
+            "schema": true,
+            "severity": true,
+            "category": true,
+            "must_mention": true,
+            "passed": true
+          }
+        },
+        {
+          "id": "gs-004",
+          "passed": true,
+          "checks": {
+            "schema": true,
+            "severity": true,
+            "category": true,
+            "must_mention": true,
+            "passed": true
+          }
+        },
+        {
+          "id": "gs-005",
+          "passed": true,
+          "checks": {
+            "schema": true,
+            "severity": true,
+            "category": true,
+            "must_mention": true,
+            "passed": true
+          }
+        }
+      ],
+      "batch_summary": {
+        "cases_run": 5,
+        "cases_passed": 5,
+        "pass_rate": 1.0
+      }
+    }
+  ]
+}

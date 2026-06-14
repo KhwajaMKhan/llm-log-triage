@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-06-14T16:28:25.019109+00:00",
+  "judge_model": "gpt-4o-mini",
+  "pass_threshold_per_dimension": 4,
+  "case_id": "judge-fail-smoke",
+  "passed": false,
+  "service_name": "payments-api",
+  "log_preview": "2026-05-28T14:02:11Z ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused",
+  "triage": {
+    "severity": "SEV4",
+    "category": "unknown",
+    "likely_cause": "No issue detected; log looks healthy.",
+    "suggested_action": "No action required.",
+    "confidence": 0.1
+  },
+  "judge": {
+    "coherence": 1,
+    "actionability": 1,
+    "rationale": "The assessment contradicts the log evidence, which clearly indicates a connection failure to the database. The suggested action of 'No action required' is not executable given the error present in the log."
+  }
+}
