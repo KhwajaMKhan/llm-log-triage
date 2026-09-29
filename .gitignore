@@ -11,3 +11,11 @@ __pycache__/
 dist/
 *.egg-info/
 notebooks/docs/
+
+# Local blog drafts / screenshots — keep outside this repo (never commit)
+blog/
+blog-draft/
+docs/blog-draft/
+screenshots/private/
+docs/jev-benchmark-runs/lab_*.json
+docs/jev-benchmark-runs/SUMMARY.md

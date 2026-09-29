@@ -30,3 +30,13 @@ cd llm-log-triage && source .venv/bin/activate
 ```
 
 GitHub equivalents: **Actions → Manual LangSmith Eval** / **Manual Judge Eval** (see [README workflows](../README.md#github-actions-workflows)).
+
+## Jev benchmark (optional)
+
+Compare **llm-log-triage** vs direct chat LLM vs [TypeSafe Jev](https://typesafe.ai) on golden-set cases — **not** a merge gate.
+
+| Script | Purpose | Keys |
+|--------|---------|------|
+| [`run_jev_benchmark.sh`](run_jev_benchmark.sh) | Full A+B+C bakeoff | `OPENAI_API_KEY`, `TYPESAFE_API_KEY` |
+
+See [`jev_benchmark/README.md`](jev_benchmark/README.md).
