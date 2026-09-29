@@ -2,6 +2,12 @@
 
 Deep-dive docs for **LLM Log Triage**. Start at the root [README](../README.md) for clone, EDD overview, and quick start.
 
+## What is llm-log-triage?
+
+Paste a **log line** (or short snippet). Get back **structured JSON**: severity, category, likely cause, suggested action, and evidence lines — fields for routing, paging, or human review, not a chat essay.
+
+Small **LangChain** app, labeled **golden set**, **CI merge gates**, CLI / Streamlit / notebook. Full intro: [README § What is llm-log-triage?](../README.md#what-is-llm-log-triage).
+
 ## Why `docs/` instead of the repo root?
 
 | Location | What belongs there |

@@ -1,5 +1,7 @@
 # Eval run artifacts (samples)
 
+**What is llm-log-triage?** Paste a log line → structured JSON (severity, category, likely cause, suggested action, evidence). See [README § What is llm-log-triage?](../../README.md#what-is-llm-log-triage).
+
 Optional structured JSON from eval runs. **Regenerate locally** after you run evals — the committed files are **examples only**, not required to use the app.
 
 | File | Producer |

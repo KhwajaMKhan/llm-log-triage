@@ -35,3 +35,17 @@ Planned enhancements beyond the v1.0 public release. For what ships today, see [
 - Pre-labeled `golden_set.json` (26 cases)
 
 See [architecture.md](architecture.md) for diagrams and module map.
+
+## GitHub Community Standards (optional polish)
+
+Not required for credibility or blog #2 — README, LICENSE, and description already cover the essentials. Revisit when inviting outside contributors or wanting a fully green Community profile.
+
+| Item | Priority | Notes |
+|------|----------|-------|
+| **CONTRIBUTING.md** | Medium | Fork → pytest → PR; link to EDD / CI gates |
+| **SECURITY.md** | Medium | No secrets in repo; how to report vulnerabilities |
+| **Issue templates** | Low–medium | Bug vs golden-set eval failure |
+| **PR template** | Low | When external PRs become common |
+| **Code of conduct** | Low | Defer unless org policy or active community |
+
+Suggested order if doing a 1–2 hour pass: CONTRIBUTING → SECURITY → issue template → CoC / PR template last.

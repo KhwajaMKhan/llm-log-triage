@@ -1,5 +1,7 @@
 # Golden set — `golden_set.json`
 
+**What is llm-log-triage?** Paste a log line → structured JSON (severity, category, likely cause, suggested action, evidence). This file is the labeled test set that scores that app — see [README § What is llm-log-triage?](../README.md#what-is-llm-log-triage).
+
 **Purpose:** Fixed labeled examples for regression evals and fair tool comparison.  
 **Used by:** `pytest -m llm` (CI merge gate), notebook EDD cells, `langsmith_eval --sync-dataset`.
 

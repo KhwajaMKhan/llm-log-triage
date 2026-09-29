@@ -1,5 +1,7 @@
 # GitHub Actions — llm-log-triage CI
 
+**What is llm-log-triage?** Paste a log line → structured JSON (severity, category, likely cause, suggested action, evidence). These workflows guard that app’s golden-set quality — see [README § What is llm-log-triage?](../../README.md#what-is-llm-log-triage).
+
 Two workflows run on every **push** and **pull_request** to `main`:
 
 | Workflow | Job name | API keys | Purpose |

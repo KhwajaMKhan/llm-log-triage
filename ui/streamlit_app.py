@@ -20,7 +20,15 @@ st.title("LLM Log Triage Summarizer")
 
 with st.sidebar:
     st.header("Config")
-    model = st.selectbox("Model", list(SUPPORTED_MODELS))
+    model = st.selectbox(
+        "Model",
+        [
+            "gpt-4o-mini",
+            "gpt-4o",
+            "claude-sonnet-4-6",  # Anthropic Sonnet (replaces retired claude-3-5-sonnet-*)
+            "claude-opus-4-7",  # Higher-quality Anthropic option
+        ],
+    )
     prompt_version = st.selectbox("Prompt version", ["v1", "v2", "v3"])
     service_name = st.text_input("Service name (optional)")
     use_cache = st.checkbox("Use response cache", value=True)

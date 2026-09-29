@@ -2,9 +2,13 @@
 
 **Open source (MIT).** Clone, add your own LLM API keys, and run — no license fee, no vendor lock-in. You pay only your provider (OpenAI, Anthropic, etc.) for inference.
 
-**LangChain LCEL app:** raw log text in → structured JSON out (severity, category, cause, action).
+## What is llm-log-triage?
 
-Golden-set evals, pytest CI gate, optional LangSmith tracing/experiments, and three interfaces (CLI, Streamlit, notebook).
+Paste a **log line** (or short snippet). Get back **structured JSON**: severity, category, likely cause, suggested action, and evidence lines — the fields an on-call engineer or router needs, not a chat essay.
+
+It is a small **LangChain** app with a frozen prompt, a labeled **golden set**, and **CI merge gates** so prompt changes cannot silently regress. Run it via **CLI**, **Streamlit**, or the **notebook**; optional **LangSmith** tracing for tokens and cost.
+
+Built as a teaching vehicle for **Evaluation-Driven Development** on LLM apps — but usable as a real triage helper once you validate it on your logs.
 
 **Architecture & diagrams:** system design, module map, and Mermaid flowcharts — see [docs/architecture.md](docs/architecture.md).
 

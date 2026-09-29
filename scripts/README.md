@@ -1,5 +1,7 @@
 # Scripts
 
+**What is llm-log-triage?** Paste a log line → structured JSON (severity, category, likely cause, suggested action, evidence). Small LangChain app with a golden set and CI merge gates — see [README § What is llm-log-triage?](../README.md#what-is-llm-log-triage).
+
 Helper scripts for local runs. **CI merge gates** are GitHub Actions — see [`.github/workflows/README.md`](../.github/workflows/README.md).
 
 ## Run interfaces
