@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jev bakeoff tables — llm-log-triage</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --a: #58a6ff;
+      --b: #f0883e;
+      --c: #3fb950;
+      --s1: #3fb950;
+      --s2: #f0883e;
+      --ok: #3fb950;
+      --warn: #f0883e;
+      --bad: #f85149;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 1.25rem 1rem 3rem;
+      max-width: 52rem;
+      margin: 0 auto;
+    }
+    header { margin-bottom: 2rem; }
+    h1 { font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em; }
+    .lede { color: var(--muted); font-size: 0.95rem; margin-top: 0.5rem; max-width: 42rem; }
+    nav {
+      margin: 1.25rem 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+    nav a { color: var(--a); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    section { margin-top: 2.25rem; }
+    h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .log {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      line-height: 1.45;
+      word-break: break-word;
+      margin-bottom: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9375rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.75rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--surface);
+      font-weight: 600;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .a { color: var(--a); }
+    .b { color: var(--b); }
+    .c { color: var(--c); }
+    .s1 { color: var(--s1); }
+    .s2 { color: var(--s2); }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .fast { color: var(--ok); }
+    .slow { color: var(--bad); }
+    .cheap { color: var(--ok); }
+    .costly { color: var(--bad); }
+    .dim { color: var(--muted); }
+    .note {
+      color: var(--muted);
+      font-size: 0.8125rem;
+      margin-top: 0.65rem;
+      line-height: 1.45;
+    }
+    footer {
+      margin-top: 2.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--a); }
+
+    /* Mobile: each row becomes a labeled card */
+    @media (max-width: 640px) {
+      table.responsive thead { display: none; }
+      table.responsive tbody tr {
+        display: block;
+        margin-bottom: 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--surface);
+      }
+      table.responsive tbody td {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        border: none;
+        border-bottom: 1px solid var(--border);
+        padding: 0.55rem 0.85rem;
+        font-size: 0.9375rem;
+      }
+      table.responsive tbody td:last-child { border-bottom: none; }
+      table.responsive tbody td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 0.8125rem;
+        flex-shrink: 0;
+        max-width: 42%;
+      }
+      table.responsive tbody td[data-label=""]::before { display: none; }
+      table.responsive tbody td.block {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+      table.responsive tbody td.block::before { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Jev vs llm-log-triage vs direct chat LLM</h1>
+    <p class="lede">
+      Responsive lab tables for the Medium bakeoff (golden set · 3 cases · 3 timed runs each).
+      Numbers below match the published post (gs-001 medians from Sep 2026 lab run).
+    </p>
+    <nav>
+      <a href="#lanes">Lanes</a>
+      <a href="#jev-types">Jev types</a>
+      <a href="#system1">System 1 vs 2</a>
+      <a href="#gs001">gs-001</a>
+      <a href="#pairwise">Pairwise</a>
+      <a href="#slice">Golden slice</a>
+      <a href="#adv002">adv-002</a>
+    </nav>
+  </header>
+
+  <section id="lanes">
+    <h2>Bakeoff — three lanes</h2>
+    <p class="sub">Same golden set · medians reported in the article</p>
+    <table class="responsive">
+      <thead>
+        <tr><th>Lane</th><th>What it is</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Lane"><strong class="a">A — llm-log-triage</strong></td>
+          <td data-label="What it is">Production app — gpt-4o-mini, prompt v3, LangChain structured JSON</td>
+        </tr>
+        <tr>
+          <td data-label="Lane"><strong class="b">B — Direct chat LLM</strong></td>
+          <td data-label="What it is">Same model, no app — think out loud, then JSON</td>
+        </tr>
+        <tr>
+          <td data-label="Lane"><strong class="c">C — Jev</strong></td>
+          <td data-label="What it is">jev-1.13.0 — Choice API for category + severity only</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="jev-types">
+    <h2>Jev question types</h2>
+    <table class="responsive">
+      <thead>
+        <tr><th>Type</th><th>You define</th><th>Jev returns</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Type"><strong>Choice</strong></td>
+          <td data-label="You define" class="block">Fixed labels (e.g. connectivity, resource, …)</td>
+          <td data-label="Jev returns" class="block">One pick + probability map + confidence</td>
+        </tr>
+        <tr>
+          <td data-label="Type"><strong>Noul</strong></td>
+          <td data-label="You define" class="block">Yes/no judgment (TypeSafe term)</td>
+          <td data-label="Jev returns" class="block">Value from 0 (no) to 1 (yes)</td>
+        </tr>
+        <tr>
+          <td data-label="Type"><strong>Score</strong></td>
+          <td data-label="You define" class="block">Ordered scale (e.g. calm → frustrated → angry)</td>
+          <td data-label="Jev returns" class="block">Weighted score + per-level probabilities + confidence</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="system1">
+    <h2>System 1 vs System 2</h2>
+    <p class="sub">Kahneman — TypeSafe borrows the names for Jev, not a clinical claim</p>
+    <table class="responsive">
+      <thead>
+        <tr><th></th><th>System 1</th><th>System 2</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="">How it feels</td>
+          <td data-label="System 1">Fast, automatic, pattern-matching</td>
+          <td data-label="System 2">Slow, deliberate, step-by-step</td>
+        </tr>
+        <tr>
+          <td data-label="">In this post</td>
+          <td data-label="System 1"><strong class="s1">Jev</strong> — label + probability in ms</td>
+          <td data-label="System 2"><strong class="s2">Direct chat LLM</strong> (lane B) — think, then JSON</td>
+        </tr>
+        <tr>
+          <td data-label="">Our app (lane A)</td>
+          <td data-label="System 1"><strong class="a">llm-log-triage</strong> — JSON one shot · closer to S1 than B</td>
+          <td data-label="System 2"><span class="dim">—</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="gs001">
+    <h2>Results: gs-001 (postgres connection refused)</h2>
+    <p class="sub">Median of 3 runs</p>
+    <div class="log">2026-05-28T14:02:11Z ERROR payments-api pid=4421 Failed to connect to postgres://payments-db:5432 - connection refused</div>
+    <table class="responsive">
+      <thead>
+        <tr><th>Lane</th><th>Latency</th><th>Tokens (in/out)</th><th>Cost</th><th>Result</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Lane"><strong class="a">A — llm-log-triage</strong></td>
+          <td data-label="Latency">1,146 ms</td>
+          <td data-label="Tokens">634 / 73</td>
+          <td data-label="Cost">$0.000139</td>
+          <td data-label="Result" class="a">connectivity / SEV2 ✓</td>
+        </tr>
+        <tr>
+          <td data-label="Lane"><strong class="b">B — Direct chat LLM</strong></td>
+          <td data-label="Latency">2,720 ms</td>
+          <td data-label="Tokens">730 / 331</td>
+          <td data-label="Cost">$0.000308</td>
+          <td data-label="Result" class="b">connectivity / SEV2 ✓</td>
+        </tr>
+        <tr>
+          <td data-label="Lane"><strong class="c">C — Jev</strong></td>
+          <td data-label="Latency">201 ms</td>
+          <td data-label="Tokens">639 / 122*</td>
+          <td data-label="Cost">$0.000027</td>
+          <td data-label="Result" class="c">connectivity / SEV2 ✓</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">* Jev: $42/Btok ($0.042/MTok input). Output tokens free — reported but not billed (TypeSafe docs).</p>
+  </section>
+
+  <section id="pairwise">
+    <h2>Pairwise comparison (gs-001 medians)</h2>
+    <p class="sub">Speedup = slow ÷ fast · same idea for cost</p>
+    <table class="responsive">
+      <thead>
+        <tr><th>Comparison</th><th>Latency</th><th>Cost</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Comparison"><span class="b">B</span> vs <span class="a">A</span> — direct LLM vs llm-log-triage</td>
+          <td data-label="Latency" class="slow">2.4× slower <span class="dim">(+137% vs A)</span></td>
+          <td data-label="Cost" class="costly">2.2× pricier <span class="dim">(+122% vs A)</span></td>
+        </tr>
+        <tr>
+          <td data-label="Comparison"><span class="c">C</span> vs <span class="a">A</span> — Jev vs llm-log-triage</td>
+          <td data-label="Latency" class="fast">5.7× faster <span class="dim">(470% faster than A)</span></td>
+          <td data-label="Cost" class="cheap">5.1× cheaper <span class="dim">(A costs 415% more than C)</span></td>
+        </tr>
+        <tr>
+          <td data-label="Comparison"><span class="c">C</span> vs <span class="b">B</span> — Jev vs direct LLM</td>
+          <td data-label="Latency" class="fast">13.5× faster <span class="dim">(1,252% faster than B)</span></td>
+          <td data-label="Cost" class="cheap">11.4× cheaper <span class="dim">(B costs 1,041% more than C)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="slice">
+    <h2>The rest of the golden slice</h2>
+    <p class="sub">gs-001, gs-002, adv-002 · category + severity</p>
+    <table class="responsive">
+      <thead>
+        <tr><th>Metric</th><th>Pattern</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Metric"><strong>Correctness</strong></td>
+          <td data-label="Pattern">All three lanes <strong>9/9</strong> on category and severity</td>
+        </tr>
+        <tr>
+          <td data-label="Metric"><strong>Latency</strong></td>
+          <td data-label="Pattern">Jev ~<strong>200 ms</strong> median · llm-log-triage ~<strong>1–1.1 s</strong> · direct chat LLM ~<strong>1.8–2.7 s</strong></td>
+        </tr>
+        <tr>
+          <td data-label="Metric"><strong>Cost</strong></td>
+          <td data-label="Pattern">Jev ~<strong>$0.000026–0.000027</strong> · llm-log-triage ~<strong>$0.00013–0.00014</strong> · direct chat LLM ~<strong>$0.00022–0.00031</strong> per call</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="adv002">
+    <h2>adv-002 — garbage input</h2>
+    <p class="sub">Correct label: unknown / unknown · confidence shape matters for auto-page</p>
+    <div class="log">asdf jkl; qwerty 12345 !@#$%</div>
+    <table class="responsive">
+      <thead>
+        <tr><th>Lane</th><th>Confidence (median)</th><th>Automation read</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Lane"><strong class="a">A — llm-log-triage</strong></td>
+          <td data-label="Confidence"><strong>0.1</strong></td>
+          <td data-label="Automation read" class="block ok">“I don't know” — safe on low-confidence thresholds</td>
+        </tr>
+        <tr>
+          <td data-label="Lane"><strong class="b">B — Direct chat LLM</strong></td>
+          <td data-label="Confidence"><strong>0.3</strong> (2/3 runs ≤ 0.4)</td>
+          <td data-label="Automation read" class="block ok">Mostly humble; one run hit 1.0</td>
+        </tr>
+        <tr>
+          <td data-label="Lane"><strong class="c">C — Jev</strong></td>
+          <td data-label="Confidence"><strong>1.0</strong></td>
+          <td data-label="Automation read" class="block warn">Label right; confidence says “absolutely unknown”</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <p>
+      Reproduce: <code>./scripts/run_jev_benchmark.sh</code> in
+      <a href="https://github.com/KhwajaMKhan/llm-log-triage">llm-log-triage</a>.
+      Raw runs: <code>docs/jev-benchmark-runs/</code> (local, gitignored JSON).
+    </p>
+    <p style="margin-top: 0.75rem;">
+      Medium article:
+      <a href="https://medium.com/@khwajakhan/jev-wont-chat-with-you-and-that-s-the-point-90f7220b8ab3">Jev Won't Chat With You, And That's the Point</a>
+    </p>
+  </footer>
+</body>
+</html>
