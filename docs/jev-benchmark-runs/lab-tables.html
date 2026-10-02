@@ -5,20 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jev bakeoff tables — llm-log-triage</title>
   <style>
+    /* Light default; dark when OS/browser prefers dark (same idea as Medium reader theme). */
+    html { color-scheme: light dark; }
     :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --a: #58a6ff;
-      --b: #f0883e;
-      --c: #3fb950;
-      --s1: #3fb950;
-      --s2: #f0883e;
-      --ok: #3fb950;
-      --warn: #f0883e;
-      --bad: #f85149;
+      --bg: #ffffff;
+      --surface: #f6f8fa;
+      --border: #d0d7de;
+      --text: #1f2328;
+      --muted: #656d76;
+      --a: #0969da;
+      --b: #bc4c00;
+      --c: #1a7f37;
+      --s1: #1a7f37;
+      --s2: #bc4c00;
+      --ok: #1a7f37;
+      --warn: #9a6700;
+      --bad: #cf222e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --border: #30363d;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --a: #58a6ff;
+        --b: #f0883e;
+        --c: #3fb950;
+        --s1: #3fb950;
+        --s2: #f0883e;
+        --ok: #3fb950;
+        --warn: #f0883e;
+        --bad: #f85149;
+      }
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
